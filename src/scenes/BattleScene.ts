@@ -108,8 +108,10 @@ export class BattleScene extends Phaser.Scene {
     this.battleLog = [];
     this.logY = 795;
 
-    // Procedural battlefield background (now 1920x1080 native)
-    this.add.image(width / 2, height / 2, 'bg_battlefield').setDepth(0);
+    // Procedural battlefield background (1920x1080 native, force Full HD display)
+    this.add.image(width / 2, height / 2, 'bg_battlefield')
+      .setDisplaySize(width, height)
+      .setDepth(0);
     // Subtle dark overlay on battlefield only (above command window at y=680)
     this.add.rectangle(width / 2, 340, width, 680, 0x000000, 0.15).setDepth(1);
 
