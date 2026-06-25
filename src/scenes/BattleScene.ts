@@ -45,6 +45,12 @@ export interface BattleUnit {
   sprite: Phaser.GameObjects.Image;
 }
 
+// ⚡ Crit helper (Pokemon-style)
+function calcCrit(unit: BattleUnit): boolean {
+  return Math.random() < 0.0625 + unit.spd / 300;
+}
+const CRIT_MULT = 1.5;
+
 interface BossPhase {
   hpThreshold: number;
   name: string;
@@ -199,10 +205,10 @@ export class BattleScene extends Phaser.Scene {
     if (this.isBoss) {
       const bossNames = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
       const bossName = bossNames[Math.min(Math.floor((this.nodeIndex ?? 0) / 4), 2)] || 'จอมมาร';
-      const statMult = 1 + this.chapter * 1.0;
-      const bossHp = Math.floor(500 * statMult);
-      const bossAtk = Math.floor(35 * statMult);
-      const bossDef = Math.floor(20 * statMult);
+      const statMult = 1 + this.chapter * 0.85;
+      const bossHp = Math.floor(400 * statMult);
+      const bossAtk = Math.floor(30 * statMult);
+      const bossDef = Math.floor(18 * statMult);
       const sprite = this.add.image(180, 220, 'boss').setScale(2.5);
       sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
@@ -235,15 +241,15 @@ export class BattleScene extends Phaser.Scene {
       ];
       const pool = enemyPool[Math.min(Math.floor((this.nodeIndex ?? 0) / 4), 2)] || enemyPool[0];
       const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
-      const enemyCount = 2 + Math.floor(Math.random() * 2); // 2-3 enemies
+      const enemyCount = 2; // 2 enemies, balanced
       for (let i = 0; i < enemyCount; i++) {
         const x = 80 + i * 140;
         const y = 200 + i * 60;
         const name = pool[Math.floor(Math.random() * pool.length)];
-        const statMult = 1 + this.chapter * 0.8;
-        const hp = Math.floor(80 * statMult);
-        const atk = Math.floor(14 * statMult);
-        const def = Math.floor(7 * statMult);
+        const statMult = 1 + this.chapter * 0.65;
+        const hp = Math.floor(60 * statMult);
+        const atk = Math.floor(11 * statMult);
+        const def = Math.floor(6 * statMult);
         const sprite = this.add.image(x, y, 'enemy').setScale(2);
         sprite.setData('origScale', 2);
         sprite.setData('origTint', 0xffffff);
@@ -346,6 +352,8 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private createUnitHpBar(unit: BattleUnit, x: number, y: number, barWidth: number, barHeight: number) {
+    // Store bar width for updates
+    unit.sprite.setData('barW', barWidth);
     // HP background
     const hpBg = this.add.rectangle(x, y, barWidth, barHeight, 0x332222).setOrigin(0.5).setDepth(22);
     // HP fill
@@ -360,18 +368,44 @@ export class BattleScene extends Phaser.Scene {
       fontSize: '10px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setDepth(24);
     unit.sprite.setData('hpText', hpText);
+
+    // MP bar below HP (heroes only, not enemies)
+    if (!unit.isEnemy) {
+      const mpY = y + 22;
+      const mpBg = this.add.rectangle(x, mpY, barWidth, 5, 0x112233).setOrigin(0.5).setDepth(22);
+      const mpPct = unit.mp / unit.maxMp;
+      const mpFill = this.add.rectangle(x - barWidth / 2, mpY, barWidth * mpPct, 5, 0x4488ff).setOrigin(0, 0.5).setDepth(23);
+      unit.sprite.setData('mpFill', mpFill);
+      unit.sprite.setData('mpBg', mpBg);
+      // MP text
+      const mpText = this.add.text(x, mpY + 8, `MP ${unit.mp}/${unit.maxMp}`, {
+        fontSize: '9px', color: '#88bbff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      }).setOrigin(0.5).setDepth(24);
+      unit.sprite.setData('mpText', mpText);
+    }
   }
 
   private updateHpBar(unit: BattleUnit) {
+    const barW = (unit.sprite.getData('barW') as number) || 80;
     const hpFill = unit.sprite.getData('hpFill') as Phaser.GameObjects.Rectangle;
     const hpText = unit.sprite.getData('hpText') as Phaser.GameObjects.Text;
     if (hpFill) {
       const pct = Math.max(0, unit.hp / unit.maxHp);
-      hpFill.width = 100 * pct;
+      hpFill.width = barW * pct;
       hpFill.fillColor = pct > 0.5 ? 0x4ecca3 : pct > 0.25 ? 0xf39c12 : 0xe74c3c;
     }
     if (hpText) {
       hpText.setText(`HP ${Math.max(0, unit.hp)}/${unit.maxHp}`);
+    }
+    // Update MP bar too
+    const mpFill = unit.sprite.getData('mpFill') as Phaser.GameObjects.Rectangle;
+    const mpText = unit.sprite.getData('mpText') as Phaser.GameObjects.Text;
+    if (mpFill) {
+      const mpPct = Math.max(0, unit.mp / unit.maxMp);
+      mpFill.width = barW * mpPct;
+    }
+    if (mpText) {
+      mpText.setText(`MP ${Math.max(0, unit.mp)}/${unit.maxMp}`);
     }
   }
 
@@ -708,14 +742,16 @@ export class BattleScene extends Phaser.Scene {
       case SkillTarget.AllEnemies: {
         const targets = this.enemies.filter(e => e.isAlive);
         targets.forEach(target => {
-          const damage = Math.max(1, Math.floor((unit.atk * power) - target.def * 0.5));
+          let damage = Math.max(1, Math.floor((unit.atk * power) - target.def * 0.5));
+          let critLog = '';
+          if (!unit.isEnemy && calcCrit(unit)) { damage = Math.floor(damage * CRIT_MULT); critLog = ' 💥คริติคอล!'; }
 
           // Hit animation on target
           playHitAnimation(target.sprite, () => {
             target.hp = Math.max(0, target.hp - damage);
             this.updateHpBar(target);
             const dmgText = effectiveness < 1 ? `${Math.floor(damage)} (ลดลง)` : `${damage}`;
-            this.addLog(`⚡ ${unit.name} ใช้ทักษะ! สร้างดาเมจ ${dmgText} แก่ ${target.name}`);
+            this.addLog(`⚡ ${unit.name} ใช้ทักษะ! สร้างดาเมจ ${dmgText} แก่ ${target.name}${critLog}`);
 
             if (target.hp <= 0) {
               playDeathAnimation(target.sprite);
@@ -785,8 +821,10 @@ export class BattleScene extends Phaser.Scene {
 
     // Animate attack
     playAttackAnimation(unit.sprite, target.sprite, () => {
-      const dmgMult = correct ? 1.0 : 0.4; // 60% penalty on wrong answer
-      const damage = Math.max(1, Math.floor(unit.atk * dmgMult - target.def * 0.3));
+      const dmgMult = correct ? 1.0 : 0.4;
+      let damage = Math.max(1, Math.floor(unit.atk * dmgMult - target.def * 0.3));
+      let critLog = '';
+      if (!unit.isEnemy && calcCrit(unit)) { damage = Math.floor(damage * CRIT_MULT); critLog = ' 💥คริติคอล!'; }
 
       if (correct) {
         SoundManager.correct();
@@ -799,8 +837,8 @@ export class BattleScene extends Phaser.Scene {
         target.hp = Math.max(0, target.hp - damage);
         this.updateHpBar(target);
         const log = correct
-          ? `⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`
-          : `⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ (ตอบผิด - ลดลง)`;
+          ? `⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ${critLog}`
+          : `⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ (ตอบผิด - ลดลง)${critLog}`;
         this.addLog(log);
 
         this.cameras.main.shake(100, 0.005);
@@ -864,14 +902,16 @@ export class BattleScene extends Phaser.Scene {
       if (phase) bossMult = phase.attackMultiplier;
     }
 
-    const damage = Math.max(1, Math.floor((unit.atk * bossMult) - (target.def * 0.3 * (target.defending ? 2 : 1))));
+    let damage = Math.max(1, Math.floor((unit.atk * bossMult) - (target.def * 0.3 * (target.defending ? 2 : 1))));
+    let critLog = '';
+    if (calcCrit(unit)) { damage = Math.floor(damage * CRIT_MULT); critLog = ' 💥คริติคอล!'; }
 
     // Animate enemy attack → hit on target
     playEnemyAttackAnimation(unit.sprite, target.sprite, () => {
       target.hp = Math.max(0, target.hp - damage);
       target.defending = false;
       this.updateHpBar(target);
-      this.addLog(`👊 ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
+      this.addLog(`👊 ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ${critLog}`);
       this.cameras.main.shake(100, 0.005);
 
       playHitAnimation(target.sprite, () => {
