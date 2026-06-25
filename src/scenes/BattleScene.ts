@@ -199,10 +199,10 @@ export class BattleScene extends Phaser.Scene {
     if (this.isBoss) {
       const bossNames = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
       const bossName = bossNames[Math.min(Math.floor((this.nodeIndex ?? 0) / 4), 2)] || 'จอมมาร';
-      const statMult = 1 + this.chapter * 0.7;
-      const bossHp = Math.floor(300 * statMult);
-      const bossAtk = Math.floor(25 * statMult);
-      const bossDef = Math.floor(15 * statMult);
+      const statMult = 1 + this.chapter * 1.0;
+      const bossHp = Math.floor(500 * statMult);
+      const bossAtk = Math.floor(35 * statMult);
+      const bossDef = Math.floor(20 * statMult);
       const sprite = this.add.image(180, 220, 'boss').setScale(2.5);
       sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
@@ -235,15 +235,15 @@ export class BattleScene extends Phaser.Scene {
       ];
       const pool = enemyPool[Math.min(Math.floor((this.nodeIndex ?? 0) / 4), 2)] || enemyPool[0];
       const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
-      const enemyCount = 1 + Math.floor(Math.random() * 2);
+      const enemyCount = 2 + Math.floor(Math.random() * 2); // 2-3 enemies
       for (let i = 0; i < enemyCount; i++) {
         const x = 80 + i * 140;
         const y = 200 + i * 60;
         const name = pool[Math.floor(Math.random() * pool.length)];
-        const statMult = 1 + this.chapter * 0.5;
-        const hp = Math.floor(40 * statMult);
-        const atk = Math.floor(8 * statMult);
-        const def = Math.floor(4 * statMult);
+        const statMult = 1 + this.chapter * 0.8;
+        const hp = Math.floor(80 * statMult);
+        const atk = Math.floor(14 * statMult);
+        const def = Math.floor(7 * statMult);
         const sprite = this.add.image(x, y, 'enemy').setScale(2);
         sprite.setData('origScale', 2);
         sprite.setData('origTint', 0xffffff);
@@ -668,11 +668,11 @@ export class BattleScene extends Phaser.Scene {
             const isCorrect = i === q.correctIndex;
             answers.push(isCorrect);
 
-            // Show correct/wrong feedback
-            const feedback = this.add.text(width / 2, height / 2 + 130,
+            // Show correct/wrong feedback (above choices to avoid overlap)
+            const feedback = this.add.text(width / 2, height / 2 - 170,
               isCorrect ? `✅ ${TH.battle.correct}` : `❌ ${TH.battle.wrong}`,
               {
-                fontSize: '28px',
+                fontSize: '24px',
                 color: isCorrect ? '#4ecca3' : '#e74c3c',
                 fontFamily: 'Noto Sans Thai, Arial, sans-serif',
                 fontStyle: 'bold',
