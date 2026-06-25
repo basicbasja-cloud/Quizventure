@@ -34,36 +34,36 @@ const CHAPTER_MAP_BG: Record<number, string> = {
 const CHAPTERS: ChapterNode[][] = [
   // Chapter 1: Forest Path
   [
-    { type: EncounterType.Empty, label: 'เริ่มต้น', description: 'คุณเริ่มต้นในป่าลึกลับ...', mapX: 80, mapY: 480 },
-    { type: EncounterType.Puzzle, label: TH.adventure.climbTree, description: TH.adventure.climbTreeDesc, dc: 10, statBonus: 'atk', mapX: 200, mapY: 400 },
-    { type: EncounterType.Treasure, label: 'หีบสมบัติ', description: TH.adventure.findTreasure, mapX: 350, mapY: 350 },
-    { type: EncounterType.Enemy, label: 'สลิมป์', description: 'สลิมป์ป่าขวางทางอยู่!', mapX: 500, mapY: 380 },
-    { type: EncounterType.Rest, label: TH.adventure.rest, description: TH.adventure.findRest, mapX: 600, mapY: 300 },
-    { type: EncounterType.Puzzle, label: TH.adventure.jumpGap, description: TH.adventure.jumpGapDesc, dc: 12, statBonus: 'spd', mapX: 480, mapY: 200 },
-    { type: EncounterType.Trap, label: 'กับดัก', description: TH.adventure.findTrap, hpDamage: 15, mapX: 300, mapY: 170 },
-    { type: EncounterType.Boss, label: 'ราชาสลิมป์', description: 'ราชาสลิมป์ปรากฏตัว!', isBossGate: true, mapX: 150, mapY: 100 },
+    { type: EncounterType.Empty, label: 'เริ่มต้น', description: 'คุณเริ่มต้นในป่าลึกลับ...', mapX: 80, mapY: 370 },
+    { type: EncounterType.Puzzle, label: TH.adventure.climbTree, description: TH.adventure.climbTreeDesc, dc: 10, statBonus: 'atk', mapX: 200, mapY: 310 },
+    { type: EncounterType.Treasure, label: 'หีบสมบัติ', description: TH.adventure.findTreasure, mapX: 350, mapY: 280 },
+    { type: EncounterType.Enemy, label: 'สลิมป์', description: 'สลิมป์ป่าขวางทางอยู่!', mapX: 500, mapY: 310 },
+    { type: EncounterType.Rest, label: TH.adventure.rest, description: TH.adventure.findRest, mapX: 600, mapY: 230 },
+    { type: EncounterType.Puzzle, label: TH.adventure.jumpGap, description: TH.adventure.jumpGapDesc, dc: 12, statBonus: 'spd', mapX: 480, mapY: 160 },
+    { type: EncounterType.Trap, label: 'กับดัก', description: TH.adventure.findTrap, hpDamage: 15, mapX: 300, mapY: 120 },
+    { type: EncounterType.Boss, label: 'ราชาสลิมป์', description: 'ราชาสลิมป์ปรากฏตัว!', isBossGate: true, mapX: 150, mapY: 75 },
   ],
   // Chapter 2: Crystal Cave
   [
-    { type: EncounterType.Empty, label: 'เข้าถ้ำ', description: 'เข้าสู่ถ้ำคริสตัล...', mapX: 80, mapY: 480 },
-    { type: EncounterType.Puzzle, label: TH.adventure.forceDoor, description: TH.adventure.forceDoorDesc, dc: 13, statBonus: 'def', mapX: 250, mapY: 420 },
-    { type: EncounterType.Treasure, label: 'คริสตัล', description: 'คุณพบคริสตัลวิเศษ!', mapX: 400, mapY: 460 },
-    { type: EncounterType.Enemy, label: 'ก็อบลิน', description: 'ก็อบลินถือกระบองขวางทาง!', mapX: 550, mapY: 390 },
-    { type: EncounterType.Puzzle, label: TH.adventure.sneakPast, description: TH.adventure.sneakPastDesc, dc: 14, statBonus: 'spd', mapX: 620, mapY: 280 },
-    { type: EncounterType.Trap, label: 'หินถล่ม', description: 'หินถล่มใส่คุณ!', hpDamage: 25, mapX: 500, mapY: 180 },
-    { type: EncounterType.Rest, label: TH.adventure.rest, description: 'คุณพักที่ลานคริสตัล', mapX: 350, mapY: 130 },
-    { type: EncounterType.Boss, label: 'ก็อบลินคิง', description: 'ก็อบลินคิงผู้ยิ่งใหญ่!', isBossGate: true, mapX: 200, mapY: 80 },
+    { type: EncounterType.Empty, label: 'เข้าถ้ำ', description: 'เข้าสู่ถ้ำคริสตัล...', mapX: 80, mapY: 370 },
+    { type: EncounterType.Puzzle, label: TH.adventure.forceDoor, description: TH.adventure.forceDoorDesc, dc: 13, statBonus: 'def', mapX: 250, mapY: 320 },
+    { type: EncounterType.Treasure, label: 'คริสตัล', description: 'คุณพบคริสตัลวิเศษ!', mapX: 400, mapY: 350 },
+    { type: EncounterType.Enemy, label: 'ก็อบลิน', description: 'ก็อบลินถือกระบองขวางทาง!', mapX: 550, mapY: 300 },
+    { type: EncounterType.Puzzle, label: TH.adventure.sneakPast, description: TH.adventure.sneakPastDesc, dc: 14, statBonus: 'spd', mapX: 620, mapY: 210 },
+    { type: EncounterType.Trap, label: 'หินถล่ม', description: 'หินถล่มใส่คุณ!', hpDamage: 25, mapX: 500, mapY: 140 },
+    { type: EncounterType.Rest, label: TH.adventure.rest, description: 'คุณพักที่ลานคริสตัล', mapX: 350, mapY: 100 },
+    { type: EncounterType.Boss, label: 'ก็อบลินคิง', description: 'ก็อบลินคิงผู้ยิ่งใหญ่!', isBossGate: true, mapX: 200, mapY: 65 },
   ],
   // Chapter 3: Dragon Summit
   [
-    { type: EncounterType.Empty, label: 'ยอดเขา', description: 'ภูเขาไฟที่มียอดเขาสูงตระหง่าน...', mapX: 80, mapY: 480 },
-    { type: EncounterType.Puzzle, label: TH.adventure.persuade, description: TH.adventure.persuadeDesc, dc: 15, statBonus: 'wis', mapX: 200, mapY: 380 },
-    { type: EncounterType.Treasure, label: 'สมบัติมังกร', description: 'คุณพบสมบัติโบราณ!', mapX: 350, mapY: 340 },
-    { type: EncounterType.Enemy, label: 'มังกรน้อย', description: 'มังกรน้อยพ่นไฟใส่คุณ!', mapX: 520, mapY: 350 },
-    { type: EncounterType.Puzzle, label: 'ปีนผา', description: 'ปีนหน้าผาสูงชัน', dc: 16, statBonus: 'atk', mapX: 640, mapY: 250 },
-    { type: EncounterType.Trap, label: 'ลาวา', description: 'ลาวาปะทุ!', hpDamage: 35, mapX: 500, mapY: 160 },
-    { type: EncounterType.Rest, label: TH.adventure.rest, description: 'ที่หลบภัยบนเขา', mapX: 350, mapY: 110 },
-    { type: EncounterType.Boss, label: 'มังกรไฟ', description: 'มังกรไฟจอมโหด!', isBossGate: true, mapX: 150, mapY: 70 },
+    { type: EncounterType.Empty, label: 'ยอดเขา', description: 'ภูเขาไฟที่มียอดเขาสูงตระหง่าน...', mapX: 80, mapY: 370 },
+    { type: EncounterType.Puzzle, label: TH.adventure.persuade, description: TH.adventure.persuadeDesc, dc: 15, statBonus: 'wis', mapX: 200, mapY: 300 },
+    { type: EncounterType.Treasure, label: 'สมบัติมังกร', description: 'คุณพบสมบัติโบราณ!', mapX: 350, mapY: 260 },
+    { type: EncounterType.Enemy, label: 'มังกรน้อย', description: 'มังกรน้อยพ่นไฟใส่คุณ!', mapX: 520, mapY: 280 },
+    { type: EncounterType.Puzzle, label: 'ปีนผา', description: 'ปีนหน้าผาสูงชัน', dc: 16, statBonus: 'atk', mapX: 640, mapY: 190 },
+    { type: EncounterType.Trap, label: 'ลาวา', description: 'ลาวาปะทุ!', hpDamage: 35, mapX: 500, mapY: 120 },
+    { type: EncounterType.Rest, label: TH.adventure.rest, description: 'ที่หลบภัยบนเขา', mapX: 350, mapY: 80 },
+    { type: EncounterType.Boss, label: 'มังกรไฟ', description: 'มังกรไฟจอมโหด!', isBossGate: true, mapX: 150, mapY: 55 },
   ],
 ];
 
@@ -119,26 +119,27 @@ export class AdventureScene extends Phaser.Scene {
     // Dice container (hidden until roll)
     this.diceContainer = this.add.container(0, 0).setDepth(10);
 
-    // Event panel overlay
-    const panelY = 510;
-    this.add.rectangle(width / 2, panelY, width - 20, 85, 0x0a0a2e, 0.92)
+    // Event panel overlay — compact, at bottom, no map overlap
+    const panelY = 440;
+    const panelH = 68;
+    this.add.rectangle(width / 2, panelY, width - 20, panelH, 0x0a0a2e, 0.92)
       .setStrokeStyle(2, 0x4ecca3).setDepth(20);
 
     const node = this.currentChapterData[this.currentNodeIndex];
-    this.add.text(width / 2, panelY - 22, `📍 ${node.label}`, {
-      fontSize: '15px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    this.add.text(width / 2, panelY - 20, `📍 ${node.label}`, {
+      fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(21);
 
-    this.infoText = this.add.text(width / 2, panelY + 5, node.description, {
-      fontSize: '12px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    this.infoText = this.add.text(width / 2, panelY + 2, node.description, {
+      fontSize: '11px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       wordWrap: { width: width - 60 }, align: 'center',
     }).setOrigin(0.5).setDepth(21);
 
-    this.diceResultText = this.add.text(width / 2, panelY + 25, '', {
-      fontSize: '13px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    this.diceResultText = this.add.text(width / 2, panelY + 18, '', {
+      fontSize: '12px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setDepth(21);
 
-    // Action buttons
+    // Action buttons on the panel
     this.createActionButtons(node, panelY);
 
     // Rolling dice overlay
@@ -192,7 +193,9 @@ export class AdventureScene extends Phaser.Scene {
         });
       }
 
-      const labelOffY = node.mapY < 200 ? -22 : 20;
+      // Node label: above if near bottom, below if near top
+      const isBottomHalf = node.mapY > 200;
+      const labelOffY = isBottomHalf ? -18 : 16;
       this.add.text(node.mapX, node.mapY + labelOffY, node.label, {
         fontSize: isCurrent ? '11px' : '9px',
         color: isCurrent ? '#f39c12' : isPast ? '#88cc88' : '#667788',
@@ -210,9 +213,12 @@ export class AdventureScene extends Phaser.Scene {
 
   private createPartyBar() {
     const { width } = this.cameras.main;
-    const barY = 583;
+    const barY = 560;
 
-    this.add.text(5, barY - 10, `บท ${this.currentChapter + 1}`, {
+    // Dark strip at bottom
+    this.add.rectangle(width / 2, barY + 10, width, 40, 0x0a0a2e, 0.85).setDepth(19);
+
+    this.add.text(5, barY, `บท ${this.currentChapter + 1}`, {
       fontSize: '10px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0, 0.5).setDepth(20);
 
@@ -221,7 +227,7 @@ export class AdventureScene extends Phaser.Scene {
       const hpPct = char.stats.hp / char.stats.maxHp;
       const hpColor = hpPct > 0.5 ? '#4ecca3' : hpPct > 0.25 ? '#f39c12' : '#e74c3c';
 
-      this.add.text(x, barY - 8, `${char.name}`, {
+      this.add.text(x, barY, `${char.name}`, {
         fontSize: '10px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
       }).setOrigin(0, 0.5).setDepth(20);
 
@@ -230,12 +236,12 @@ export class AdventureScene extends Phaser.Scene {
         hpPct > 0.5 ? 0x4ecca3 : hpPct > 0.25 ? 0xf39c12 : 0xe74c3c
       ).setOrigin(0, 0.5).setDepth(21);
 
-      this.add.text(x + 100, barY - 8, `Lv.${char.level}`, {
+      this.add.text(x + 100, barY, `Lv.${char.level}`, {
         fontSize: '9px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       }).setOrigin(0, 0.5).setDepth(20);
     });
 
-    this.add.text(width - 5, barY - 10, `${this.currentNodeIndex + 1}/${this.currentChapterData.length}`, {
+    this.add.text(width - 5, barY, `${this.currentNodeIndex + 1}/${this.currentChapterData.length}`, {
       fontSize: '10px', color: '#555555', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(1, 0.5).setDepth(20);
   }
@@ -269,11 +275,11 @@ export class AdventureScene extends Phaser.Scene {
     }
 
     buttons.forEach((btn, i) => {
-      const x = width / 2 - 60 + i * 130;
-      const bg = this.add.image(x, panelY + 40, i === 1 ? 'btn_gold' : 'btn_blue_sm')
-        .setInteractive({ useHandCursor: true }).setDepth(22);
-      const txt = this.add.text(x, panelY + 40, btn.text, {
-        fontSize: '12px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      const x = width / 2 - 50 + i * 110;
+      const bg = this.add.image(x, panelY + 30, i === 1 ? 'btn_gold_sm' : 'btn_blue_sm')
+        .setInteractive({ useHandCursor: true }).setScale(0.9).setDepth(22);
+      const txt = this.add.text(x, panelY + 30, btn.text, {
+        fontSize: '11px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       }).setOrigin(0.5).setDepth(23);
 
       bg.on('pointerover', () => bg.setScale(1.05));
