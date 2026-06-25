@@ -104,6 +104,18 @@ export class BattleScene extends Phaser.Scene {
       .setDisplaySize(width, Math.max(height, width * 1025 / 1024))
       .setOrigin(0.5);
 
+    // JRPG floor plane for depth perspective
+    const floor = this.add.graphics();
+    floor.fillStyle(0x000000, 0.25);
+    floor.fillRect(0, height * 0.45, width, height * 0.55);
+    // Floor gradient lines for depth
+    for (let i = 0; i < 6; i++) {
+      const y = height * 0.45 + i * 12;
+      floor.lineStyle(1, 0xffffff, 0.05 - i * 0.007);
+      floor.lineBetween(0, y, width, y);
+    }
+    floor.setDepth(0);
+
     // Enemy health check - check if there's enough questions
     if (this.isBoss) {
       const availableCount = await this.checkQuestionAvailability();
@@ -147,13 +159,22 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private createHeroUnits() {
+    // JRPG side-view: heroes on RIGHT, stacked vertically with stagger
+    const total = this.party.length;
     this.heroes = this.party.map((char, i) => {
-      const x = 80 + i * 160;
-      const y = 280;
+      const staggerX = (total - 1 - i) * 8; // front chars slightly right
+      const x = 580 + staggerX;
+      const startY = total <= 3 ? 220 : 180;
+      const spacing = total <= 3 ? 60 : 50;
+      const y = startY + i * spacing;
       const charKey = `char_${char.classType}`;
-      const sprite = this.add.image(x, y, charKey).setScale(3);
-      sprite.setData('origScale', 3);
+      const sprite = this.add.image(x, y, charKey).setScale(2.5);
+      sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
+      sprite.setData('homeX', x);
+      sprite.setData('homeY', y);
+      // Slight depth based on position (front chars slightly in front)
+      sprite.setDepth(10 - i);
       startIdleAnimation(sprite);
       return {
         character: char,
@@ -172,6 +193,16 @@ export class BattleScene extends Phaser.Scene {
         sprite,
       };
     });
+
+    // Hero name labels
+    this.heroes.forEach(h => {
+      if (h.sprite) {
+        this.add.text(h.sprite.x, h.sprite.y + 38, h.name, {
+          fontSize: '11px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+          stroke: '#000000', strokeThickness: 2,
+        }).setOrigin(0.5).setDepth(20);
+      }
+    });
   }
 
   private createEnemyUnits() {
@@ -181,12 +212,15 @@ export class BattleScene extends Phaser.Scene {
       const bossHp = 300 + this.chapter * 200;
       const bossAtk = 25 + this.chapter * 10;
       const bossDef = 15 + this.chapter * 5;
-      const sprite = this.add.image(width / 2, 150, 'boss').setScale(2.5);
-      sprite.setData('origScale', 2.5);
+      const sprite = this.add.image(200, 220, 'boss').setScale(3);
+      sprite.setData('origScale', 3);
       sprite.setData('origTint', 0xffffff);
+      sprite.setData('homeX', 200);
+      sprite.setData('homeY', 220);
+      sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
-        character: createCharacter('boss', 'บอส', ClassType.Warrior, 5 + this.chapter),
+        character: createCharacter('boss', 'จอมมาร', ClassType.Warrior, 5 + this.chapter),
         isEnemy: true,
         isBoss: true,
         hp: bossHp,
@@ -205,12 +239,16 @@ export class BattleScene extends Phaser.Scene {
       const enemyCount = 1 + Math.floor(Math.random() * 2);
       const enemyNames = ['สลิมป์', 'ก็อบลิน', 'ออร์ค', 'โครงกระดูก', 'ค้างคาวยักษ์'];
       for (let i = 0; i < enemyCount; i++) {
-        const x = width / 2 - 80 + i * 160;
+        const x = 100 + i * 140;
+        const y = 240 + i * 30;
         const name = enemyNames[Math.floor(Math.random() * enemyNames.length)];
         const hp = 40 + this.chapter * 15;
-        const sprite = this.add.image(x, 160, 'enemy').setScale(2);
-        sprite.setData('origScale', 2);
+        const sprite = this.add.image(x, y, 'enemy').setScale(2.2);
+        sprite.setData('origScale', 2.2);
         sprite.setData('origTint', 0xffffff);
+        sprite.setData('homeX', x);
+        sprite.setData('homeY', y);
+        sprite.setDepth(15 - i);
         startIdleAnimation(sprite);
         this.enemies.push({
           character: createCharacter(`enemy_${i}`, name, ClassType.Warrior, 1 + this.chapter),
@@ -233,9 +271,10 @@ export class BattleScene extends Phaser.Scene {
 
     // Enemy name labels
     this.enemies.forEach(e => {
-      this.add.text(e.sprite.x, e.sprite.y - 50, e.name, {
-        fontSize: '14px', color: '#ff4444', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-      }).setOrigin(0.5);
+      this.add.text(e.sprite.x, e.sprite.y - 55, e.name, {
+        fontSize: '13px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(20);
     });
   }
 
@@ -364,22 +403,34 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  /** Highlight the active hero with a glow effect */
+  /** Highlight the active hero with a glow effect and ready stance */
   private highlightActiveHero(unit: BattleUnit) {
-    // Reset all hero alphas
+    // Reset all hero alphas and positions
     this.heroes.forEach(h => {
-      if (h.sprite) h.sprite.setAlpha(0.5);
+      if (h.sprite) {
+        h.sprite.setAlpha(0.5);
+        // Reset to home position
+        const hx = h.sprite.getData('homeX');
+        const hy = h.sprite.getData('homeY');
+        if (hx) h.sprite.x = hx;
+        if (hy) h.sprite.y = hy;
+      }
     });
-    // Highlight the active one
+    // Highlight the active one with ready stance animation
     if (unit.sprite) {
       unit.sprite.setAlpha(1);
+      const origScale = unit.sprite.getData('origScale') || 2.5;
+      // Ready up - slight step forward + bounce
       this.tweens.add({
         targets: unit.sprite,
-        scaleX: unit.sprite.scaleX * 1.1,
-        scaleY: unit.sprite.scaleY * 1.1,
-        duration: 400,
+        x: unit.sprite.x + 15,
+        scaleX: origScale * 1.08,
+        scaleY: origScale * 1.08,
+        duration: 250,
+        ease: 'Back.easeOut',
         yoyo: true,
-        repeat: 2,
+        repeat: 1,
+        hold: 200,
       });
     }
   }
