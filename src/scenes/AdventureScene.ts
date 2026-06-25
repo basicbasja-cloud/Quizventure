@@ -362,7 +362,7 @@ export class AdventureScene extends Phaser.Scene {
     const btns: { text: string; action: () => void }[] = [];
     switch (event.type) {
       case EncounterType.Empty: btns.push({ text: TH.adventure.continue, action: () => this.advanceToNext() }); break;
-      case EncounterType.Puzzle: if (event.dc) btns.push({ text: `🎲 d20 (DC ${event.dc})`, action: () => this.doDiceCheck(event) }); break;
+      case EncounterType.Puzzle: if (event.dc) btns.push({ text: `🎲 d20`, action: () => this.doDiceCheck(event) }); break;
       case EncounterType.Treasure: btns.push({ text: 'เปิด', action: () => this.doOpenChest() }); break;
       case EncounterType.Trap: btns.push({ text: 'เดินต่อ', action: () => this.doTrapDamage(event) }); break;
       case EncounterType.Rest: btns.push({ text: TH.adventure.rest, action: () => this.doRest() }); break;
@@ -372,14 +372,17 @@ export class AdventureScene extends Phaser.Scene {
     btns.forEach((b, i) => {
       const x = width / 2 - 50 + i * 115;
       const bg = this.add.image(x, btnY, i === 1 ? 'btn_gold_sm' : 'btn_blue_sm')
-        .setInteractive({ useHandCursor: true }).setScale(0.9).setDepth(22);
+        .setInteractive({ useHandCursor: true }).setScale(1).setDepth(22);
       this.add.text(x, btnY, b.text, {
-        fontSize: '12px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
       }).setOrigin(0.5).setDepth(23);
-      bg.on('pointerover', () => bg.setScale(0.95));
-      bg.on('pointerout', () => bg.setScale(0.9));
-      bg.on('pointerdown', () => { bg.setScale(0.85); b.action(); });
+      bg.on('pointerover', () => bg.setScale(1.05));
+      bg.on('pointerout', () => bg.setScale(1));
+      bg.on('pointerdown', () => { bg.setScale(0.95); b.action(); });
     });
+    // Keyboard shortcut: Space/Enter to trigger first action
+    this.input.keyboard?.on('keydown-SPACE', () => { if (btns.length > 0) btns[0].action(); });
+    this.input.keyboard?.on('keydown-ENTER', () => { if (btns.length > 0) btns[0].action(); });
   }
 
   private async doDiceCheck(event: ZoneEvent) {

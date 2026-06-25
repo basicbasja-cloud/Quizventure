@@ -90,6 +90,23 @@ export class PartySelectScene extends Phaser.Scene {
 
     // Confirm button
     this.createConfirmButton(width, height);
+
+    // Keyboard shortcuts: 1-6 to select, Enter to confirm
+    this.input.keyboard?.on('keydown-ONE', () => this.toggleClass(0));
+    this.input.keyboard?.on('keydown-TWO', () => this.toggleClass(1));
+    this.input.keyboard?.on('keydown-THREE', () => this.toggleClass(2));
+    this.input.keyboard?.on('keydown-FOUR', () => this.toggleClass(3));
+    this.input.keyboard?.on('keydown-FIVE', () => this.toggleClass(4));
+    this.input.keyboard?.on('keydown-SIX', () => this.toggleClass(5));
+    this.input.keyboard?.on('keydown-ENTER', () => { if (this.selected.length === 4) this.startGame(); });
+  }
+
+  private toggleClass(index: number) {
+    if (index < 0 || index >= ALL_CLASSES.length) return;
+    const ct = ALL_CLASSES[index];
+    const idx = this.selected.indexOf(ct);
+    if (idx >= 0) { this.selected.splice(idx, 1); }
+    else if (this.selected.length < 4) { this.selected.push(ct); }
   }
 
   private createClassCard(x: number, y: number, w: number, h: number, classType: ClassType) {
