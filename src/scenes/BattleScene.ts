@@ -186,13 +186,14 @@ export class BattleScene extends Phaser.Scene {
       };
     });
 
-    // Hero name labels (above sprite, so no overlap with HP bar below)
+    // Hero stat panel to the RIGHT of each sprite (no vertical overlap)
     this.heroes.forEach(h => {
       if (h.sprite) {
-        this.add.text(h.sprite.x, h.sprite.y - 35, h.name, {
+        const px = h.sprite.x + 50;
+        this.add.text(px, h.sprite.y - 10, h.name, {
           fontSize: '11px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
           stroke: '#000000', strokeThickness: 2,
-        }).setOrigin(0.5).setDepth(25);
+        }).setOrigin(0, 0.5).setDepth(25);
       }
     });
   }
@@ -295,11 +296,11 @@ export class BattleScene extends Phaser.Scene {
   private createHpBars() {
     this.hpBarContainer = this.add.container(0, 0);
 
-    // Heroes: HP bar below sprite
+    // Heroes: stat panel to the RIGHT of each sprite
     this.heroes.forEach((unit, i) => {
-      const x = this.heroes[i].sprite.x;
-      const y = this.heroes[i].sprite.y + 35;
-      this.createUnitHpBar(unit, x, y, 80, 7);
+      const x = this.heroes[i].sprite.x + 50;
+      const y = this.heroes[i].sprite.y;
+      this.createUnitHpBar(unit, x, y, 70, 6);
     });
 
     // Enemies: HP bar below sprite
