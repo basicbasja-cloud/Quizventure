@@ -13,8 +13,8 @@ import { SaveLoadScene } from './scenes/SaveLoadScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: 1920,
+  height: 1080,
   parent: 'game-container',
   backgroundColor: '#1a1a2e',
   scale: {
@@ -33,6 +33,7 @@ const config: Phaser.Types.Core.GameConfig = {
   render: {
     pixelArt: false,
     antialias: true,
+    roundPixels: false,
   },
   physics: {
     default: 'arcade',
