@@ -512,7 +512,7 @@ export class BattleScene extends Phaser.Scene {
     this.actionMenu.setVisible(true);
 
     const { width } = this.cameras.main;
-    const menuY = 545;
+    const menuY = 900;
     const isHealer = unit.character.classType === ClassType.Healer;
 
     // All classes: Attack (requires questions), Skills, Defend, Escape
@@ -525,10 +525,10 @@ export class BattleScene extends Phaser.Scene {
     // Escape removed — use home button in AdventureScene instead
 
     actions.forEach((btn, i) => {
-      const x = 80 + i * 145;
+      const x = 190 + i * 350;
       const bg = this.add.image(x, menuY, 'btn_blue_sm').setInteractive({ useHandCursor: true }).setDepth(0);
       const txt = this.add.text(x, menuY, btn.text, {
-        fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        fontSize: '24px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
       }).setOrigin(0.5).setDepth(0);
 
       bg.on('pointerover', () => bg.setScale(1.08));

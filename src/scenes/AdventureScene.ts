@@ -264,9 +264,9 @@ export class AdventureScene extends Phaser.Scene {
 
   private createInfoPanel() {
     const { width } = this.cameras.main;
-    const panelY = 785;
+    const panelY = 800;
     // Panel background
-    this.add.rectangle(width / 2, panelY, width - 16, 50, 0x0a0a2e, 0.92).setStrokeStyle(2, 0x4ecca3).setDepth(20);
+    this.add.rectangle(width / 2, panelY, width - 16, 90, 0x0a0a2e, 0.92).setStrokeStyle(3, 0x4ecca3).setDepth(20);
     const node = this.mapNodes[this.currentNodeIndex];
     // Zone name row
     this.add.text(width / 2, panelY - 16, `${ZONES[node.zone].emoji} ${node.locationName} [${ZONES[node.zone].label}]`, {
@@ -358,7 +358,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createActionButtons(event: ZoneEvent) {
     const { width } = this.cameras.main;
-    const btnY = 890;
+    const btnY = 910;
     const btns: { text: string; action: () => void }[] = [];
     switch (event.type) {
       case EncounterType.Empty: btns.push({ text: TH.adventure.continue, action: () => this.advanceToNext() }); break;
@@ -458,7 +458,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createPartyBar() {
     const { width } = this.cameras.main;
-    const y = 1000;
+    const y = 1020;
     // Bar background
     this.add.rectangle(width / 2, y + 5, width, 35, 0x0a0a2e, 0.85).setDepth(19);
     // Zone progress on left
