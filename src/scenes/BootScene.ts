@@ -5,6 +5,7 @@
 import Phaser from 'phaser';
 import { TH } from '../lang/th';
 import { QuestionBank } from '../systems/QuestionBank';
+import { generateClassTextures } from '../systems/ProceduralChars';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -17,14 +18,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_adventure', 'assets/images/backgrounds/bg_adventure.png');
     this.load.image('bg_battle', 'assets/images/backgrounds/bg_battle.png');
 
-    // Load LPC character sprites (generated from LPC Revised pack)
-    const chars = ['warrior','archer','paladin','rogue','mage','healer'];
-    chars.forEach(c => {
-      this.load.image('char_'+c, 'assets/images/characters/char_'+c+'.png');
-      this.load.image('char_'+c+'_evolved', 'assets/images/characters/char_'+c+'_evolved.png');
-    });
-    this.load.image('enemy', 'assets/images/characters/enemy.png');
-    this.load.image('boss', 'assets/images/characters/boss.png');
+    // Character textures are generated procedurally in create()
 
     // Load sound effects
     const sounds = [
@@ -53,16 +47,25 @@ export class BootScene extends Phaser.Scene {
 
     const updateProgress = (pct: number) => { barFill.width = 300 * (pct / 100); };
 
-    await QuestionBank.seedSampleData();
-    updateProgress(40);
+    // Seed sample questions in background (don't block on it)
+    QuestionBank.seedSampleData().then(() => updateProgress(40)).catch(() => updateProgress(40));
+    updateProgress(20);
+
+    // Generate procedural character textures
+    try {
+      generateClassTextures(this);
+    } catch (e) {
+      console.error('ProceduralChars failed:', e);
+    }
+    updateProgress(60);
 
     // Generate UI buttons & dice
     this.genUI();
     this.genDice();
+    updateProgress(80);
 
-    updateProgress(100);
-
-    this.time.delayedCall(300, () => {
+    // Transition to main menu after a moment
+    this.time.delayedCall(400, () => {
       this.scene.start('MainMenuScene');
     });
   }
