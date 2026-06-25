@@ -154,7 +154,7 @@ export class BattleScene extends Phaser.Scene {
       const isEven = total === 4;
       // Stagger diagonally: back chars higher and further left
       const fromBack = total - 1 - i;
-      const x = 620 - fromBack * 45;
+      const x = 650 - fromBack * 45;
       const y = 360 + fromBack * 32;
       const charKey = `char_${char.classType}`;
       const sprite = this.add.image(x, y, charKey).setScale(1.8);
@@ -631,34 +631,35 @@ export class BattleScene extends Phaser.Scene {
         const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.85);
         this.questionOverlay.add(overlay);
 
-        // Question panel
-        const panel = this.add.rectangle(width / 2, height / 2 - 30, 550, 350, 0x1a1a3e).setStrokeStyle(2, 0xf39c12);
+        // Question panel — wider to fit choices comfortably
+        const panel = this.add.rectangle(width / 2, height / 2 - 30, 620, 400, 0x1a1a3e).setStrokeStyle(2, 0xf39c12);
         this.questionOverlay.add(panel);
 
         // Progress
-        const progress = this.add.text(width / 2, height / 2 - 160,
+        const progress = this.add.text(width / 2, height / 2 - 180,
           `${TH.battle.questionProgress} ${currentQ + 1}${TH.battle.of}${questions.length}`,
           { fontSize: '18px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' },
         ).setOrigin(0.5);
         this.questionOverlay.add(progress);
 
         // Question text
-        const questionText = this.add.text(width / 2, height / 2 - 110, q.prompt, {
+        const questionText = this.add.text(width / 2, height / 2 - 120, q.prompt, {
           fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-          wordWrap: { width: 500 }, align: 'center',
+          wordWrap: { width: 560 }, align: 'center',
         }).setOrigin(0.5);
         this.questionOverlay.add(questionText);
 
         // Choices
         q.choices.forEach((choice, i) => {
-          const y = height / 2 - 30 + i * 55;
-          const choiceBg = this.add.rectangle(width / 2, y, 450, 45, 0x0a0a2e).setStrokeStyle(1, 0x4ecca3);
+          const y = height / 2 - 30 + i * 60;
+          const choiceBg = this.add.rectangle(width / 2, y, 540, 50, 0x0a0a2e).setStrokeStyle(1, 0x4ecca3);
           choiceBg.setInteractive({ useHandCursor: true });
           this.questionOverlay.add(choiceBg);
 
-          const choiceText = this.add.text(width / 2, y, `${i + 1}. ${choice}`, {
+          const choiceText = this.add.text(width / 2 - 250, y, `${i + 1}. ${choice}`, {
             fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-          }).setOrigin(0.5);
+            wordWrap: { width: 500 }, align: 'left',
+          }).setOrigin(0, 0.5);
           this.questionOverlay.add(choiceText);
 
           choiceBg.on('pointerover', () => choiceBg.setStrokeStyle(2, 0xf39c12));
