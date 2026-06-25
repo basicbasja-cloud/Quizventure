@@ -99,9 +99,15 @@ export class MainMenuScene extends Phaser.Scene {
       fontFamily: 'Arial, sans-serif',
     }).setOrigin(0.5);
 
-    // Keyboard shortcut
+    // Keyboard shortcuts
     this.input.keyboard?.on('keydown-T', () => {
       this.scene.start('TeacherDashboard');
+    });
+    this.input.keyboard?.on('keydown-ONE', () => {
+      this.scene.start('PartySelectScene', { saveSlot: -1 });
+    });
+    this.input.keyboard?.on('keydown-TWO', () => {
+      this.scene.start('SaveLoadScene', { mode: 'load' });
     });
   }
 

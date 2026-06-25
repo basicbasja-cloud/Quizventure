@@ -14,13 +14,19 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load Kenney background images
+    // Load zone backgrounds
     this.load.image('bg_menu', 'assets/images/backgrounds/bg_menu.png');
     this.load.image('bg_adventure', 'assets/images/backgrounds/bg_adventure.png');
     this.load.image('bg_battle', 'assets/images/backgrounds/bg_battle.png');
     this.load.image('bg_forest', 'assets/images/backgrounds/colored_forest.png');
     this.load.image('bg_cave', 'assets/images/backgrounds/colored_talltrees.png');
-    this.load.image('bg_mountain', 'assets/images/backgrounds/colored_desert.png');
+    this.load.image('bg_desert', 'assets/images/backgrounds/colored_desert.png');
+    this.load.image('bg_castle', 'assets/images/backgrounds/colored_castle.png');
+    this.load.image('bg_hills', 'assets/images/backgrounds/uncolored_hills.png');
+    this.load.image('bg_peaks', 'assets/images/backgrounds/uncolored_peaks.png');
+    this.load.image('bg_pyramids', 'assets/images/backgrounds/uncolored_piramids.png');
+    this.load.image('bg_plain', 'assets/images/backgrounds/uncolored_plain.png');
+    this.load.image('bg_volcano', 'assets/images/backgrounds/uncolored_talltrees.png');
 
     // Character textures are generated procedurally in create()
 
