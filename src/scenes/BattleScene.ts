@@ -106,7 +106,7 @@ export class BattleScene extends Phaser.Scene {
 
     this.bossPhase = 0;
     this.battleLog = [];
-    this.logY = 370;
+    this.logY = 660;
 
     // Procedural battlefield background with integrated ground
     this.add.image(width / 2, height / 2, 'bg_battlefield').setDepth(0);
@@ -158,8 +158,8 @@ export class BattleScene extends Phaser.Scene {
     const total = this.party.length;
     this.heroes = this.party.map((char, i) => {
       const fromBack = total - 1 - i;
-      const x = 100 + fromBack * 55;
-      const y = 420 - fromBack * 50;
+      const x = 240 + fromBack * 130;
+      const y = 750 - fromBack * 90;
       const charKey = `char_${char.classType}`;
       const sprite = this.add.image(x, y, charKey).setScale(1.2);
       sprite.setData('origScale', 1.2);
@@ -208,11 +208,11 @@ export class BattleScene extends Phaser.Scene {
       const bossHp = Math.floor(400 * statMult);
       const bossAtk = Math.floor(30 * statMult);
       const bossDef = Math.floor(18 * statMult);
-      const sprite = this.add.image(620, 230, 'boss').setScale(2.5);
-      sprite.setData('origScale', 2.5);
+      const sprite = this.add.image(1480, 410, 'boss').setScale(4);
+      sprite.setData('origScale', 4);
       sprite.setData('origTint', 0xffffff);
-      sprite.setData('homeX', 620);
-      sprite.setData('homeY', 230);
+      sprite.setData('homeX', 1480);
+      sprite.setData('homeY', 410);
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
@@ -242,8 +242,8 @@ export class BattleScene extends Phaser.Scene {
       const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
       const enemyCount = 2; // 2 enemies, balanced
       for (let i = 0; i < enemyCount; i++) {
-        const x = 640 - i * 90;
-        const y = 190 + i * 60;
+        const x = 1530 - i * 220;
+        const y = 340 + i * 110;
         const name = pool[Math.floor(Math.random() * pool.length)];
         const statMult = 1 + this.chapter * 0.65;
         const hp = Math.floor(60 * statMult);
@@ -277,9 +277,9 @@ export class BattleScene extends Phaser.Scene {
 
     // Enemy name labels
     this.enemies.forEach(e => {
-      this.add.text(e.sprite.x, e.sprite.y - 45, e.name, {
-        fontSize: '12px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 2,
+      this.add.text(e.sprite.x, e.sprite.y - 80, e.name, {
+        fontSize: '22px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5).setDepth(25);
     });
   }
@@ -298,16 +298,16 @@ export class BattleScene extends Phaser.Scene {
 
     // Heroes: stat panel to the RIGHT of each sprite
     this.heroes.forEach((unit, i) => {
-      const x = this.heroes[i].sprite.x + 50;
+      const x = this.heroes[i].sprite.x + 120;
       const y = this.heroes[i].sprite.y;
-      this.createUnitHpBar(unit, x, y, 70, 6);
+      this.createUnitHpBar(unit, x, y, 160, 10);
     });
 
     // Enemies: HP bar below sprite
     this.enemies.forEach((unit) => {
       const x = unit.sprite.x;
-      const y = unit.sprite.y + 35;
-      this.createUnitHpBar(unit, x, y, 80, 7);
+      const y = unit.sprite.y + 60;
+      this.createUnitHpBar(unit, x, y, 160, 10);
     });
 
     // Boss: Dark Souls style — big bar at the TOP of the screen
@@ -324,16 +324,16 @@ export class BattleScene extends Phaser.Scene {
       if (oldText) oldText.destroy();
 
       // Boss name at top
-      this.add.text(width / 2, 70, `👑 ${boss.name}`, {
-        fontSize: '18px', color: '#ff4444', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 3,
+      this.add.text(width / 2, 125, `👑 ${boss.name}`, {
+        fontSize: '32px', color: '#ff4444', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 4,
       }).setOrigin(0.5).setDepth(30);
 
       // Boss HP bar — wide bar at top
-      const barW = 400;
-      const barH = 18;
+      const barW = 800;
+      const barH = 28;
       const barX = width / 2;
-      const barY = 95;
+      const barY = 170;
 
       const hpBg = this.add.rectangle(barX, barY, barW, barH, 0x331111).setOrigin(0.5).setDepth(30);
       hpBg.setStrokeStyle(2, 0xff4444);
@@ -343,8 +343,8 @@ export class BattleScene extends Phaser.Scene {
       sprite.setData('hpBg', hpBg);
 
       const hpText = this.add.text(barX, barY, `HP ${boss.hp}/${boss.maxHp}`, {
-        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 2,
+        fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5).setDepth(32);
       sprite.setData('hpText', hpText);
     }
@@ -363,22 +363,22 @@ export class BattleScene extends Phaser.Scene {
     unit.sprite.setData('hpBg', hpBg);
 
     // HP text
-    const hpText = this.add.text(x, y + 10, `HP ${unit.hp}/${unit.maxHp}`, {
-      fontSize: '10px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    const hpText = this.add.text(x, y + 14, `HP ${unit.hp}/${unit.maxHp}`, {
+      fontSize: '18px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setDepth(24);
     unit.sprite.setData('hpText', hpText);
 
     // MP bar below HP (heroes only, not enemies)
     if (!unit.isEnemy) {
-      const mpY = y + 22;
-      const mpBg = this.add.rectangle(x, mpY, barWidth, 5, 0x112233).setOrigin(0.5).setDepth(22);
+      const mpY = y + 32;
+      const mpBg = this.add.rectangle(x, mpY, barWidth, 8, 0x112233).setOrigin(0.5).setDepth(22);
       const mpPct = unit.mp / unit.maxMp;
-      const mpFill = this.add.rectangle(x - barWidth / 2, mpY, barWidth * mpPct, 5, 0x4488ff).setOrigin(0, 0.5).setDepth(23);
+      const mpFill = this.add.rectangle(x - barWidth / 2, mpY, barWidth * mpPct, 8, 0x4488ff).setOrigin(0, 0.5).setDepth(23);
       unit.sprite.setData('mpFill', mpFill);
       unit.sprite.setData('mpBg', mpBg);
       // MP text
-      const mpText = this.add.text(x, mpY + 8, `MP ${unit.mp}/${unit.maxMp}`, {
-        fontSize: '9px', color: '#88bbff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      const mpText = this.add.text(x, mpY + 12, `MP ${unit.mp}/${unit.maxMp}`, {
+        fontSize: '16px', color: '#88bbff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       }).setOrigin(0.5).setDepth(24);
       unit.sprite.setData('mpText', mpText);
     }
@@ -512,7 +512,7 @@ export class BattleScene extends Phaser.Scene {
     this.actionMenu.setVisible(true);
 
     const { width } = this.cameras.main;
-    const menuY = 545;
+    const menuY = 980;
     const isHealer = unit.character.classType === ClassType.Healer;
 
     // All classes: Attack (requires questions), Skills, Defend, Escape
@@ -525,7 +525,7 @@ export class BattleScene extends Phaser.Scene {
     // Escape removed — use home button in AdventureScene instead
 
     actions.forEach((btn, i) => {
-      const x = 80 + i * 145;
+      const x = 190 + i * 350;
       const bg = this.add.image(x, menuY, 'btn_blue_sm').setInteractive({ useHandCursor: true }).setDepth(0);
       const txt = this.add.text(x, menuY, btn.text, {
         fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
@@ -556,15 +556,15 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
 
-    this.add.text(width / 2, 440, TH.battle.skillSelection, {
-      fontSize: '16px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    this.add.text(width / 2, 790, TH.battle.skillSelection, {
+      fontSize: '28px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
     }).setOrigin(0.5);
 
     skills.forEach((skill, i) => {
       const row = Math.floor(i / 3);
       const col = i % 3;
-      const x = width / 2 - 200 + col * 210;
-      const y = 480 + row * 50;
+      const x = width / 2 - 480 + col * 500;
+      const y = 860 + row * 90;
 
       const questionLabel = `${TH.battle.questionRequired} ${skill.requiredQuestionCount} ${TH.battle.questions}`;
       const diffLabel = `(${BattleQuestionSystem.getDifficultyLabel(skill.questionDifficulty)})`;
@@ -592,9 +592,9 @@ export class BattleScene extends Phaser.Scene {
     });
 
     // Cancel button
-    const cancelBg = this.add.image(width / 2, 560, 'btn_red_sm').setInteractive({ useHandCursor: true });
-    const cancelTxt = this.add.text(width / 2, 560, TH.general.cancel, {
-      fontSize: '16px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    const cancelBg = this.add.image(width / 2, 1000, 'btn_red_sm').setInteractive({ useHandCursor: true });
+    const cancelTxt = this.add.text(width / 2, 1000, TH.general.cancel, {
+      fontSize: '28px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5);
     this.skillMenu.add(cancelBg);
     this.skillMenu.add(cancelTxt);
@@ -665,33 +665,33 @@ export class BattleScene extends Phaser.Scene {
         this.questionOverlay.add(overlay);
 
         // Question panel — wider to fit choices comfortably
-        const panel = this.add.rectangle(width / 2, height / 2 - 30, 620, 400, 0x1a1a3e).setStrokeStyle(2, 0xf39c12);
+        const panel = this.add.rectangle(width / 2, height / 2 - 60, 1200, 700, 0x1a1a3e).setStrokeStyle(3, 0xf39c12);
         this.questionOverlay.add(panel);
 
         // Progress
-        const progress = this.add.text(width / 2, height / 2 - 180,
+        const progress = this.add.text(width / 2, height / 2 - 300,
           `${TH.battle.questionProgress} ${currentQ + 1}${TH.battle.of}${questions.length}`,
           { fontSize: '18px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' },
         ).setOrigin(0.5);
         this.questionOverlay.add(progress);
 
         // Question text
-        const questionText = this.add.text(width / 2, height / 2 - 120, q.prompt, {
-          fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-          wordWrap: { width: 560 }, align: 'center',
+        const questionText = this.add.text(width / 2, height / 2 - 200, q.prompt, {
+          fontSize: '36px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+          wordWrap: { width: 1000 }, align: 'center',
         }).setOrigin(0.5);
         this.questionOverlay.add(questionText);
 
         // Choices
         q.choices.forEach((choice, i) => {
-          const y = height / 2 - 30 + i * 60;
-          const choiceBg = this.add.rectangle(width / 2, y, 540, 50, 0x0a0a2e).setStrokeStyle(1, 0x4ecca3);
+          const y = height / 2 - 60 + i * 110;
+          const choiceBg = this.add.rectangle(width / 2, y, 1000, 80, 0x0a0a2e).setStrokeStyle(2, 0x4ecca3);
           choiceBg.setInteractive({ useHandCursor: true });
           this.questionOverlay.add(choiceBg);
 
-          const choiceText = this.add.text(width / 2 - 250, y, `${i + 1}. ${choice}`, {
-            fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-            wordWrap: { width: 500 }, align: 'left',
+          const choiceText = this.add.text(width / 2 - 480, y, `${i + 1}. ${choice}`, {
+            fontSize: '28px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+            wordWrap: { width: 920 }, align: 'left',
           }).setOrigin(0, 0.5);
           this.questionOverlay.add(choiceText);
 
@@ -702,10 +702,10 @@ export class BattleScene extends Phaser.Scene {
             answers.push(isCorrect);
 
             // Show correct/wrong feedback (above choices to avoid overlap)
-            const feedback = this.add.text(width / 2, height / 2 - 170,
+            const feedback = this.add.text(width / 2, height / 2 - 320,
               isCorrect ? `✅ ${TH.battle.correct}` : `❌ ${TH.battle.wrong}`,
               {
-                fontSize: '24px',
+                fontSize: '40px',
                 color: isCorrect ? '#4ecca3' : '#e74c3c',
                 fontFamily: 'Noto Sans Thai, Arial, sans-serif',
                 fontStyle: 'bold',

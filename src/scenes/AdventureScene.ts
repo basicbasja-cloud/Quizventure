@@ -117,20 +117,20 @@ const ZONE_EVENTS: Record<ZoneType, ZoneEvent[]> = {
 
 // 14 nodes winding in an S-curve across the full canvas
 const PATH_NODES: { x: number; y: number }[] = [
-  { x: 80,  y: 370 }, // N0  start bottom-left
-  { x: 220, y: 330 }, // N1
-  { x: 400, y: 370 }, // N2
-  { x: 580, y: 330 }, // N3
-  { x: 740, y: 370 }, // N4  bottom-right
-  { x: 740, y: 280 }, // N5  turn up right side
-  { x: 580, y: 240 }, // N6
-  { x: 400, y: 280 }, // N7
-  { x: 220, y: 240 }, // N8
-  { x: 80,  y: 280 }, // N9  left side
-  { x: 80,  y: 190 }, // N10 turn up left side
-  { x: 220, y: 150 }, // N11
-  { x: 400, y: 190 }, // N12
-  { x: 580, y: 150 }, // N13 final boss
+  { x: 190, y: 660 }, // N0  start bottom-left
+  { x: 530, y: 590 }, // N1
+  { x: 960, y: 660 }, // N2
+  { x: 1390, y: 590 }, // N3
+  { x: 1770, y: 660 }, // N4  bottom-right
+  { x: 1770, y: 500 }, // N5  turn up right side
+  { x: 1390, y: 430 }, // N6
+  { x: 960, y: 500 }, // N7
+  { x: 530, y: 430 }, // N8
+  { x: 190, y: 500 }, // N9  left side
+  { x: 190, y: 340 }, // N10 turn up left side
+  { x: 530, y: 270 }, // N11
+  { x: 960, y: 340 }, // N12
+  { x: 1390, y: 270 }, // N13 final boss
 ];
 
 interface MapNode { zone: ZoneType; x: number; y: number; locationName: string; event: ZoneEvent; }
@@ -195,7 +195,7 @@ export class AdventureScene extends Phaser.Scene {
     this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.3).setDepth(1);
 
     // Home button (top-right corner)
-    const homeBtn = this.add.text(width - 10, 8, '🏠', { fontSize: '22px', stroke: '#000000', strokeThickness: 3 })
+    const homeBtn = this.add.text(width - 20, 16, '🏠', { fontSize: '36px', stroke: '#000000', strokeThickness: 4 })
       .setOrigin(1, 0).setInteractive({ useHandCursor: true }).setDepth(50);
     homeBtn.on('pointerover', () => homeBtn.setScale(1.2));
     homeBtn.on('pointerout', () => homeBtn.setScale(1));
@@ -205,7 +205,7 @@ export class AdventureScene extends Phaser.Scene {
     });
 
     // Fullscreen button (top-left corner)
-    const fsBtn = this.add.text(8, 8, '⛶', { fontSize: '20px', stroke: '#000000', strokeThickness: 3 })
+    const fsBtn = this.add.text(16, 16, '⛶', { fontSize: '36px', stroke: '#000000', strokeThickness: 4 })
       .setOrigin(0, 0).setInteractive({ useHandCursor: true }).setDepth(50);
     fsBtn.on('pointerdown', () => {
       if (document.fullscreenElement) { document.exitFullscreen(); }
@@ -264,7 +264,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createInfoPanel() {
     const { width } = this.cameras.main;
-    const panelY = 435;
+    const panelY = 785;
     // Panel background
     this.add.rectangle(width / 2, panelY, width - 16, 50, 0x0a0a2e, 0.92).setStrokeStyle(2, 0x4ecca3).setDepth(20);
     const node = this.mapNodes[this.currentNodeIndex];
@@ -302,7 +302,7 @@ export class AdventureScene extends Phaser.Scene {
       const n = this.mapNodes[mid];
       if (n) {
         const allDone = this.currentNodeIndex > seg.e;
-        zoneLabels[this.zoneOrder[si]] = { x: 770, y: n.y, zone: n.zone, done: allDone };
+        zoneLabels[this.zoneOrder[si]] = { x: 1850, y: n.y, zone: n.zone, done: allDone };
       }
     });
     Object.values(zoneLabels).forEach(zl => {
@@ -358,7 +358,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createActionButtons(event: ZoneEvent) {
     const { width } = this.cameras.main;
-    const btnY = 495;
+    const btnY = 890;
     const btns: { text: string; action: () => void }[] = [];
     switch (event.type) {
       case EncounterType.Empty: btns.push({ text: TH.adventure.continue, action: () => this.advanceToNext() }); break;
@@ -458,7 +458,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createPartyBar() {
     const { width } = this.cameras.main;
-    const y = 555;
+    const y = 1000;
     // Bar background
     this.add.rectangle(width / 2, y + 5, width, 35, 0x0a0a2e, 0.85).setDepth(19);
     // Zone progress on left
