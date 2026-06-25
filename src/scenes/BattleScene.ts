@@ -63,7 +63,7 @@ export class BattleScene extends Phaser.Scene {
   private saveSlot = 0;
   private turnIndicator!: Phaser.GameObjects.Text;
   private turnOrderCalculated = false;
-  private gold = 100;
+
   private party: Character[] = [];
   private battleLog: Phaser.GameObjects.Text[] = [];
   private logY = 440;
@@ -86,7 +86,7 @@ export class BattleScene extends Phaser.Scene {
     chapter?: number;
     nodeIndex?: number;
     saveSlot?: number;
-    gold?: number;
+
   }) {
     const { width, height } = this.cameras.main;
 
@@ -95,7 +95,7 @@ export class BattleScene extends Phaser.Scene {
     this.chapter = data.chapter ?? 0;
     this.nodeIndex = data.nodeIndex ?? 0;
     this.saveSlot = data.saveSlot ?? 0;
-    this.gold = data.gold ?? 100;
+
     this.bossPhase = 0;
     this.battleLog = [];
     this.logY = 440;
@@ -897,11 +897,8 @@ export class BattleScene extends Phaser.Scene {
 
     // Calculate rewards
     const xpReward = 50 + this.chapter * 30;
-    const goldReward = 30 + this.chapter * 20;
-    this.gold += goldReward;
 
     this.addLog(`✨ ได้รับ EXP ${xpReward} ทุกตัว`);
-    this.addLog(`💰 ได้รับทอง ${goldReward}`);
 
     // Apply XP and check level ups
     for (const char of this.party) {
@@ -917,7 +914,7 @@ export class BattleScene extends Phaser.Scene {
     // Auto-save
     const saveData = createNewSave(this.party);
     saveData.id = this.saveSlot;
-    saveData.gold = this.gold;
+
     saveData.currentChapter = this.chapter + 1;
     saveData.currentNodeIndex = this.nodeIndex;
     SaveSystem.save(this.saveSlot, saveData);

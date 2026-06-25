@@ -17,6 +17,9 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_menu', 'assets/images/backgrounds/bg_menu.png');
     this.load.image('bg_adventure', 'assets/images/backgrounds/bg_adventure.png');
     this.load.image('bg_battle', 'assets/images/backgrounds/bg_battle.png');
+    this.load.image('bg_forest', 'assets/images/backgrounds/colored_forest.png');
+    this.load.image('bg_cave', 'assets/images/backgrounds/colored_talltrees.png');
+    this.load.image('bg_mountain', 'assets/images/backgrounds/colored_desert.png');
 
     // Character textures are generated procedurally in create()
 
