@@ -93,6 +93,9 @@ export class TeacherDashboard extends Phaser.Scene {
 
     const startY = 140;
 
+    // Header background
+    const headerBg = this.add.rectangle(400, startY + 11, 760, 28, 0x0a1a2e, 0.9);
+    this.listContainer.add(headerBg);
     // Header
     const headers = ['ลำดับ', 'หมวดหมู่', 'ความยาก', 'คำถาม', 'คงเหลือ', 'จัดการ'];
     const colWidths = [50, 80, 70, 300, 60, 100];
@@ -126,6 +129,9 @@ export class TeacherDashboard extends Phaser.Scene {
 
     this.questions.forEach((q, i) => {
       const y = startY + 30 + i * 36;
+      // Row background for contrast
+      const rowBg = this.add.rectangle(400, y + 8, 760, 32, i % 2 === 0 ? 0x0a0a2e : 0x12123e, 0.85);
+      this.listContainer.add(rowBg);
       const catName = (TH.classes as any)[q.category] || q.category;
       const diffLabel = TH.teacher.difficultyLevels[q.difficulty - 1] || '';
       const status = q.usesRemaining > 0
