@@ -16,6 +16,7 @@ debug*.png
 ss_*.png
 bug_*.png
 final_*.png
+dice_*.png
 
 # Editor directories and files
 .vscode/*
