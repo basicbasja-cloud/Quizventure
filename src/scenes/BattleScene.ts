@@ -1033,19 +1033,19 @@ export class BattleScene extends Phaser.Scene {
   private addLog(text: string) {
     const { width } = this.cameras.main;
     const logEntry = this.add.text(width / 2, this.logY, text, {
-      fontSize: '18px', color: '#dddddd', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-      wordWrap: { width: 800 }, align: 'center',
-      stroke: '#000000', strokeThickness: 3,
+      fontSize: '11px', color: '#dddddd', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      wordWrap: { width: 450 }, align: 'center',
+      stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5).setAlpha(0.7).setDepth(28);
 
     this.battleLog.push(logEntry);
-    this.logY += 36;
+    this.logY += 20;
 
     // Keep last 5 logs visible
     if (this.battleLog.length > 5) {
       const old = this.battleLog.shift();
       old?.destroy();
-      this.logY -= 36;
+      this.logY -= 20;
     }
   }
 }
