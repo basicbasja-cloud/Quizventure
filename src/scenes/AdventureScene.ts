@@ -168,16 +168,16 @@ export class AdventureScene extends Phaser.Scene {
     this.positionPartyIcon();
 
     const panelY = 440;
-    this.add.rectangle(width / 2, panelY, width - 20, 68, 0x0a0a2e, 0.92).setStrokeStyle(2, 0x4ecca3).setDepth(20);
+    this.add.rectangle(width / 2, panelY, width - 20, 55, 0x0a0a2e, 0.92).setStrokeStyle(2, 0x4ecca3).setDepth(20);
     const node = this.mapNodes[this.currentNodeIndex];
-    this.add.text(width / 2, panelY - 20, `${ZONES[node.zone].emoji} ${node.locationName} [${ZONES[node.zone].label}]`, {
+    this.add.text(width / 2, panelY - 16, `${ZONES[node.zone].emoji} ${node.locationName} [${ZONES[node.zone].label}]`, {
       fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(21);
     this.infoText = this.add.text(width / 2, panelY + 2, node.event.description, {
       fontSize: '11px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       wordWrap: { width: width - 60 }, align: 'center',
     }).setOrigin(0.5).setDepth(21);
-    this.diceResultText = this.add.text(width / 2, panelY + 18, '', {
+    this.diceResultText = this.add.text(width / 2, panelY + 16, '', {
       fontSize: '12px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setDepth(21);
     this.createActionButtons(node.event, panelY);
@@ -256,8 +256,8 @@ export class AdventureScene extends Phaser.Scene {
     }
     btns.forEach((b, i) => {
       const x = width / 2 - 50 + i * 110;
-      const bg = this.add.image(x, panelY + 30, i === 1 ? 'btn_gold_sm' : 'btn_blue_sm').setInteractive({ useHandCursor: true }).setScale(0.9).setDepth(22);
-      this.add.text(x, panelY + 30, b.text, { fontSize: '11px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5).setDepth(23);
+      const bg = this.add.image(x, panelY + 52, i === 1 ? 'btn_gold_sm' : 'btn_blue_sm').setInteractive({ useHandCursor: true }).setScale(0.9).setDepth(22);
+      this.add.text(x, panelY + 52, b.text, { fontSize: '11px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5).setDepth(23);
       bg.on('pointerover', () => bg.setScale(0.95));
       bg.on('pointerout', () => bg.setScale(0.9));
       bg.on('pointerdown', () => { bg.setScale(0.85); b.action(); });
