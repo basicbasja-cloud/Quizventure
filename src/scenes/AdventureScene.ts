@@ -298,13 +298,13 @@ export class AdventureScene extends Phaser.Scene {
     const finalValue = result.total;
 
     let tickCount = 0;
-    const maxTicks = 25;
+    const maxTicks = 12;
     SoundManager.diceRoll();
     const doSpinTick = () => {
       tickCount++;
       this.rollingValue.setText(String(Math.floor(Math.random() * 20) + 1));
       if (tickCount < maxTicks) {
-        this.time.delayedCall(50 + (tickCount / maxTicks) * 350, doSpinTick);
+        this.time.delayedCall(30 + (tickCount / maxTicks) * 120, doSpinTick);
       } else {
         this.rollingValue.setText(String(finalValue));
         this.tweens.add({ targets: this.rollingValue, scaleX: 1.5, scaleY: 1.5, duration: 120, yoyo: true });
