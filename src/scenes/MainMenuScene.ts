@@ -103,6 +103,10 @@ export class MainMenuScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-T', () => {
       this.scene.start('TeacherDashboard');
     });
+    this.input.keyboard?.on('keydown-F', () => {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else { document.documentElement.requestFullscreen(); }
+    });
     this.input.keyboard?.on('keydown-ONE', () => {
       this.scene.start('PartySelectScene', { saveSlot: -1 });
     });

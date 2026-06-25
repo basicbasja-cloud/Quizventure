@@ -963,7 +963,12 @@ export class BattleScene extends Phaser.Scene {
     SaveSystem.save(this.saveSlot, saveData);
 
     this.time.delayedCall(2500, () => {
-      this.scene.start('AdventureScene', { party: this.party, saveSlot: this.saveSlot });
+      this.scene.start('AdventureScene', {
+        party: this.party,
+        saveSlot: this.saveSlot,
+        nodeIndex: (this.nodeIndex ?? 0) + 1,
+        zoneOrder: this.zoneOrder,
+      });
     });
   }
 

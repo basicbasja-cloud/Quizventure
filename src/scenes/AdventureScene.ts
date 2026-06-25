@@ -42,65 +42,75 @@ const LOCATION_NAMES: Record<ZoneType, string[]> = {
 
 const ZONE_EVENTS: Record<ZoneType, ZoneEvent[]> = {
   forest: [
+    { type: EncounterType.Enemy, label: 'หมาป่า', description: 'หมาป่าจู่โจม!' },
+    { type: EncounterType.Enemy, label: 'หมี', description: 'หมีป่าโจมตี!' },
     { type: EncounterType.Puzzle, label: 'ปีนต้นไม้', description: 'ปีนต้นไม้ใหญ่ข้ามเหว', dc: 10, statBonus: 'atk' },
     { type: EncounterType.Treasure, label: 'สมุนไพร', description: 'พบสมุนไพรหายาก' },
-    { type: EncounterType.Enemy, label: 'หมาป่า', description: 'หมาป่าจู่โจม!' },
     { type: EncounterType.Rest, label: 'แค้มป์', description: 'พบที่พักกลางป่า' },
     { type: EncounterType.Trap, label: 'หลุมพราง', description: 'ตกลงหลุมพราง!', hpDamage: 15 },
   ],
   cave: [
+    { type: EncounterType.Enemy, label: 'ค้างคาว', description: 'ค้างคาวยักษ์โจมตี!' },
+    { type: EncounterType.Enemy, label: 'งูยักษ์', description: 'งูยักษ์พุ่งโจมตี!' },
     { type: EncounterType.Puzzle, label: 'เขย่าผนัง', description: 'ต้องหาทางออก', dc: 12, statBonus: 'def' },
     { type: EncounterType.Treasure, label: 'คริสตัล', description: 'พบคริสตัลส่องแสง' },
-    { type: EncounterType.Enemy, label: 'ค้างคาว', description: 'ค้างคาวยักษ์โจมตี!' },
     { type: EncounterType.Trap, label: 'หินถล่ม', description: 'หินถล่มใส่คุณ!', hpDamage: 20 },
   ],
   desert: [
+    { type: EncounterType.Enemy, label: 'แมงป่อง', description: 'แมงป่องยักษ์!' },
+    { type: EncounterType.Enemy, label: 'จิ้งจก', description: 'จิ้งจกทะเลทราย!' },
     { type: EncounterType.Puzzle, label: 'หาเส้นทาง', description: 'หาทางในพายุทราย', dc: 13, statBonus: 'wis' },
     { type: EncounterType.Treasure, label: 'สุสาน', description: 'พบสุสานโบราณ' },
-    { type: EncounterType.Enemy, label: 'แมงป่อง', description: 'แมงป่องยักษ์!' },
     { type: EncounterType.Rest, label: 'โอเอซิส', description: 'พักที่โอเอซิส' },
     { type: EncounterType.Trap, label: 'ทรายดูด', description: 'ทรายดูด!', hpDamage: 20 },
   ],
   castle: [
+    { type: EncounterType.Enemy, label: 'อัศวิน', description: 'อัศวินผีสิงโจมตี!' },
+    { type: EncounterType.Enemy, label: 'ทหาร', description: 'ทหารยามโจมตี!' },
     { type: EncounterType.Puzzle, label: 'ยามเฝ้า', description: 'เลี่ยงยามเฝ้าประตู', dc: 14, statBonus: 'spd' },
     { type: EncounterType.Treasure, label: 'สมบัติ', description: 'พบห้องสมบัติ!' },
-    { type: EncounterType.Enemy, label: 'อัศวิน', description: 'อัศวินผีสิงโจมตี!' },
     { type: EncounterType.Rest, label: 'ห้องพัก', description: 'พบห้องพักของคนใช้' },
   ],
   hills: [
+    { type: EncounterType.Enemy, label: 'อีแร้ง', description: 'อีแร้งยักษ์!' },
+    { type: EncounterType.Enemy, label: 'เสือ', description: 'เสือเขี้ยวดาบ!' },
     { type: EncounterType.Puzzle, label: 'ข้ามเขา', description: 'ข้ามเนินสูงชัน', dc: 11, statBonus: 'atk' },
     { type: EncounterType.Treasure, label: 'ดอกไม้', description: 'พบดอกไม้วิเศษ' },
-    { type: EncounterType.Enemy, label: 'อีแร้ง', description: 'อีแร้งยักษ์!' },
     { type: EncounterType.Rest, label: 'ศาลา', description: 'พักที่ศาลาริมทาง' },
   ],
   peaks: [
+    { type: EncounterType.Enemy, label: 'ยักษ์', description: 'ยักษ์ภูเขา!' },
+    { type: EncounterType.Enemy, label: 'อินทรี', description: 'อินทรียักษ์!' },
     { type: EncounterType.Puzzle, label: 'ปีนน้ำแข็ง', description: 'ปีนหน้าผาน้ำแข็ง', dc: 15, statBonus: 'atk' },
     { type: EncounterType.Treasure, label: 'เพชร', description: 'พบเพชรบนยอดเขา' },
-    { type: EncounterType.Enemy, label: 'ยักษ์', description: 'ยักษ์ภูเขา!' },
     { type: EncounterType.Trap, label: 'หิมะถล่ม', description: 'หิมะถล่ม!', hpDamage: 25 },
   ],
   pyramids: [
+    { type: EncounterType.Enemy, label: 'มัมมี่', description: 'มัมมี่คืนชีพ!' },
+    { type: EncounterType.Enemy, label: 'แมลง', description: 'แมลงปีกแข็งยักษ์!' },
     { type: EncounterType.Puzzle, label: 'ปริศนา', description: 'แก้ปริศนาห้องฝังศพ', dc: 14, statBonus: 'wis' },
     { type: EncounterType.Treasure, label: 'สุสาน', description: 'พบขุมทรัพย์ฟาโรห์' },
-    { type: EncounterType.Enemy, label: 'มัมมี่', description: 'มัมมี่คืนชีพ!' },
     { type: EncounterType.Trap, label: 'กับดัก', description: 'กับดักโบราณ!', hpDamage: 25 },
   ],
   plain: [
+    { type: EncounterType.Enemy, label: 'กระทิง', description: 'กระทิงป่า!' },
+    { type: EncounterType.Enemy, label: 'หมาป่า', description: 'ฝูงหมาป่า!' },
     { type: EncounterType.Puzzle, label: 'ข้ามบึง', description: 'หาทางข้ามบึง', dc: 10, statBonus: 'spd' },
     { type: EncounterType.Treasure, label: 'พืชหายาก', description: 'พบพืชพันธุ์หายาก' },
-    { type: EncounterType.Enemy, label: 'กระทิง', description: 'กระทิงป่า!' },
     { type: EncounterType.Rest, label: 'หมู่บ้าน', description: 'พักในหมู่บ้าน' },
   ],
   beach: [
+    { type: EncounterType.Enemy, label: 'ปลาหมึก', description: 'ปลาหมึกยักษ์!' },
+    { type: EncounterType.Enemy, label: 'ปู', description: 'ปูยักษ์หนีบ!' },
     { type: EncounterType.Puzzle, label: 'ข้ามโขดหิน', description: 'เดินบนโขดหิน', dc: 11, statBonus: 'spd' },
     { type: EncounterType.Treasure, label: 'ไข่มุก', description: 'พบไข่มุกในเปลือกหอย' },
-    { type: EncounterType.Enemy, label: 'ปลาหมึก', description: 'ปลาหมึกยักษ์!' },
     { type: EncounterType.Rest, label: 'ชายหาด', description: 'พักผ่อนริมทะเล' },
   ],
   volcano: [
+    { type: EncounterType.Enemy, label: 'มังกร', description: 'มังกรพ่นไฟ!' },
+    { type: EncounterType.Enemy, label: 'ปีศาจ', description: 'ปีศาจไฟ!' },
     { type: EncounterType.Puzzle, label: 'ปีนปล่อง', description: 'ปีนข้ามปล่องภูเขาไฟ', dc: 14, statBonus: 'atk' },
     { type: EncounterType.Treasure, label: 'หินร้อน', description: 'พบหินวิเศษร้อนแรง' },
-    { type: EncounterType.Enemy, label: 'มังกร', description: 'มังกรพ่นไฟ!' },
     { type: EncounterType.Trap, label: 'ลาวา', description: 'ลาวาปะทุ!', hpDamage: 30 },
   ],
 };
@@ -194,6 +204,19 @@ export class AdventureScene extends Phaser.Scene {
       this.scene.start('MainMenuScene');
     });
 
+    // Fullscreen button (top-left corner)
+    const fsBtn = this.add.text(8, 8, '⛶', { fontSize: '20px', stroke: '#000000', strokeThickness: 3 })
+      .setOrigin(0, 0).setInteractive({ useHandCursor: true }).setDepth(50);
+    fsBtn.on('pointerdown', () => {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else { document.documentElement.requestFullscreen(); }
+    });
+    // F key for fullscreen
+    this.input.keyboard?.on('keydown-F', () => {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else { document.documentElement.requestFullscreen(); }
+    });
+
     this.drawMap();
     this.partyIcon = this.add.text(0, 0, '👥', { fontSize: '18px' }).setOrigin(0.5).setDepth(10);
     this.positionPartyIcon();
@@ -241,21 +264,21 @@ export class AdventureScene extends Phaser.Scene {
 
   private createInfoPanel() {
     const { width } = this.cameras.main;
-    const panelY = 410;
+    const panelY = 435;
     // Panel background
-    this.add.rectangle(width / 2, panelY, width - 16, 48, 0x0a0a2e, 0.92).setStrokeStyle(2, 0x4ecca3).setDepth(20);
+    this.add.rectangle(width / 2, panelY, width - 16, 50, 0x0a0a2e, 0.92).setStrokeStyle(2, 0x4ecca3).setDepth(20);
     const node = this.mapNodes[this.currentNodeIndex];
     // Zone name row
-    this.add.text(width / 2, panelY - 14, `${ZONES[node.zone].emoji} ${node.locationName} [${ZONES[node.zone].label}]`, {
-      fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    this.add.text(width / 2, panelY - 16, `${ZONES[node.zone].emoji} ${node.locationName} [${ZONES[node.zone].label}]`, {
+      fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(21);
     // Event description
     this.infoText = this.add.text(width / 2, panelY + 4, node.event.description, {
-      fontSize: '11px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      fontSize: '12px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       wordWrap: { width: width - 60 }, align: 'center',
     }).setOrigin(0.5).setDepth(21);
     // Dice result
-    this.diceResultText = this.add.text(width / 2, panelY + 20, '', {
+    this.diceResultText = this.add.text(width / 2, panelY + 18, '', {
       fontSize: '12px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setDepth(21);
     // Action buttons below panel
@@ -335,7 +358,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createActionButtons(event: ZoneEvent) {
     const { width } = this.cameras.main;
-    const btnY = 478;
+    const btnY = 495;
     const btns: { text: string; action: () => void }[] = [];
     switch (event.type) {
       case EncounterType.Empty: btns.push({ text: TH.adventure.continue, action: () => this.advanceToNext() }); break;
@@ -432,7 +455,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createPartyBar() {
     const { width } = this.cameras.main;
-    const y = 535;
+    const y = 555;
     // Bar background
     this.add.rectangle(width / 2, y + 5, width, 35, 0x0a0a2e, 0.85).setDepth(19);
     // Zone progress on left
