@@ -154,11 +154,11 @@ export class BattleScene extends Phaser.Scene {
       const isEven = total === 4;
       // Stagger diagonally: back chars higher and further left
       const fromBack = total - 1 - i;
-      const x = 650 - fromBack * 45;
-      const y = 360 + fromBack * 32;
+      const x = 650 - fromBack * 90;
+      const y = 300 + fromBack * 50;
       const charKey = `char_${char.classType}`;
-      const sprite = this.add.image(x, y, charKey).setScale(1.8);
-      sprite.setData('origScale', 1.8);
+      const sprite = this.add.image(x, y, charKey).setScale(1.2);
+      sprite.setData('origScale', 1.2);
       sprite.setData('origTint', 0xffffff);
       sprite.setData('homeX', x);
       sprite.setData('homeY', y);
@@ -182,11 +182,11 @@ export class BattleScene extends Phaser.Scene {
       };
     });
 
-    // Hero name labels
+    // Hero name labels (above sprite, so no overlap with HP bar below)
     this.heroes.forEach(h => {
       if (h.sprite) {
-        this.add.text(h.sprite.x, h.sprite.y + 30, h.name, {
-          fontSize: '10px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        this.add.text(h.sprite.x, h.sprite.y - 35, h.name, {
+          fontSize: '11px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
           stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5).setDepth(25);
       }
@@ -203,11 +203,11 @@ export class BattleScene extends Phaser.Scene {
       const bossHp = Math.floor(300 * statMult);
       const bossAtk = Math.floor(25 * statMult);
       const bossDef = Math.floor(15 * statMult);
-      const sprite = this.add.image(180, 380, 'boss').setScale(2.5);
+      const sprite = this.add.image(180, 220, 'boss').setScale(2.5);
       sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
       sprite.setData('homeX', 180);
-      sprite.setData('homeY', 380);
+      sprite.setData('homeY', 220);
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
@@ -237,8 +237,8 @@ export class BattleScene extends Phaser.Scene {
       const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
       const enemyCount = 1 + Math.floor(Math.random() * 2);
       for (let i = 0; i < enemyCount; i++) {
-        const x = 150 + i * 140;
-        const y = 370 + i * 45;
+        const x = 80 + i * 140;
+        const y = 200 + i * 60;
         const name = pool[Math.floor(Math.random() * pool.length)];
         const statMult = 1 + this.chapter * 0.5;
         const hp = Math.floor(40 * statMult);
