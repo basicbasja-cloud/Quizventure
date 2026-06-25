@@ -1,0 +1,843 @@
+// ============================================================
+// ⚔️ Battle Scene — Turn-Based Combat with Questions
+// ============================================================
+
+import Phaser from 'phaser';
+import { TH } from '../lang/th';
+import type { Character } from '../models/Character';
+import { addXp, createCharacter, getCharacterSkills } from '../models/Character';
+import { ClassType, CLASS_DEFINITIONS, ClassStage } from '../models/CharacterClass';
+import { SkillTarget } from '../models/Skill';
+import type { SkillDefinition } from '../models/Skill';
+import { BattleQuestionSystem } from '../systems/BattleQuestionSystem';
+import { QuestionBank } from '../systems/QuestionBank';
+import { SaveSystem } from '../systems/SaveSystem';
+import { createNewSave } from '../models/PlayerState';
+import type { QuestionData } from '../models/Question';
+import { SoundManager } from '../systems/SoundManager';
+import { VisualEffects } from '../systems/VisualEffects';
+
+interface BattleUnit {
+  character: Character;
+  isEnemy: boolean;
+  isBoss: boolean;
+  hp: number;
+  maxHp: number;
+  mp: number;
+  maxMp: number;
+  atk: number;
+  def: number;
+  spd: number;
+  name: string;
+  isAlive: boolean;
+  defending: boolean;
+  sprite: Phaser.GameObjects.Image;
+}
+
+interface BossPhase {
+  hpThreshold: number;
+  name: string;
+  attackMultiplier: number;
+}
+
+export class BattleScene extends Phaser.Scene {
+  private heroes: BattleUnit[] = [];
+  private enemies: BattleUnit[] = [];
+  private turnOrder: BattleUnit[] = [];
+  private currentTurnIndex = 0;
+  private isProcessing = false;
+  private isBoss = false;
+  private chapter = 0;
+  private nodeIndex = 0;
+  private saveSlot = 0;
+  private turnIndicator!: Phaser.GameObjects.Text;
+  private turnOrderCalculated = false;
+  private gold = 100;
+  private party: Character[] = [];
+  private battleLog: Phaser.GameObjects.Text[] = [];
+  private logY = 400;
+  private bossPhase = 0;
+  private vfx!: VisualEffects;
+  private bossPhases: BossPhase[] = [];
+  private actionMenu!: Phaser.GameObjects.Container;
+  private skillMenu!: Phaser.GameObjects.Container;
+  private questionOverlay!: Phaser.GameObjects.Container;
+  private hpBarContainer!: Phaser.GameObjects.Container;
+  private currentUnit!: BattleUnit;
+
+  constructor() {
+    super({ key: 'BattleScene' });
+  }
+
+  async create(data: {
+    party: Character[];
+    isBoss?: boolean;
+    chapter?: number;
+    nodeIndex?: number;
+    saveSlot?: number;
+    gold?: number;
+  }) {
+    const { width, height } = this.cameras.main;
+
+    this.party = data.party;
+    this.isBoss = data.isBoss ?? false;
+    this.chapter = data.chapter ?? 0;
+    this.nodeIndex = data.nodeIndex ?? 0;
+    this.saveSlot = data.saveSlot ?? 0;
+    this.gold = data.gold ?? 100;
+    this.bossPhase = 0;
+    this.battleLog = [];
+    this.logY = 400;
+
+    this.add.image(width / 2, height / 2, 'bg_battle')
+      .setDisplaySize(width, Math.max(height, width * 1025 / 1024))
+      .setOrigin(0.5);
+
+    // Enemy health check - check if there's enough questions
+    if (this.isBoss) {
+      const availableCount = await this.checkQuestionAvailability();
+      if (availableCount < 2) {
+        // Notify and return to adventure
+        this.scene.start('AdventureScene', { party: this.party, saveSlot: this.saveSlot });
+        return;
+      }
+    }
+
+    // Create units
+    this.createHeroUnits();
+    this.createEnemyUnits();
+    this.createBossPhases();
+    this.createHpBars();
+
+    // Battle title
+    const title = this.isBoss ? TH.adventure.findBoss : TH.adventure.findEnemy;
+    this.add.text(width / 2, 15, `⚔️ ${title}`, {
+      fontSize: '20px', color: '#ff6600', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    }).setOrigin(0.5).setAlpha(0.9);
+
+    // Turn indicator text
+    this.turnIndicator = this.add.text(width / 2, 45, '', {
+      fontSize: '18px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    }).setOrigin(0.5);
+
+    // Create menus (hidden initially)
+    this.actionMenu = this.add.container(0, 0).setVisible(false);
+    this.skillMenu = this.add.container(0, 0).setVisible(false);
+    this.questionOverlay = this.add.container(0, 0).setVisible(false);
+
+    // Calculate turn order ONCE — persists across rounds
+    this.calculateTurnOrder();
+    this.turnOrderCalculated = true;
+    this.currentTurnIndex = 0;
+
+    // Start battle
+    this.addLog(`⚔️ การต่อสู้เริ่มต้น!`);
+    this.startNextTurn();
+  }
+
+  private createHeroUnits() {
+    this.heroes = this.party.map((char, i) => {
+      const x = 80 + i * 160;
+      const y = 280;
+      const charKey = `char_${char.classType}`;
+      const sprite = this.add.image(x, y, charKey).setScale(3);
+      return {
+        character: char,
+        isEnemy: false,
+        isBoss: false,
+        hp: char.stats.hp,
+        maxHp: char.stats.maxHp,
+        mp: char.stats.mp,
+        maxMp: char.stats.maxMp,
+        atk: char.stats.atk,
+        def: char.stats.def,
+        spd: char.stats.spd,
+        name: char.name,
+        isAlive: true,
+        defending: false,
+        sprite,
+      };
+    });
+  }
+
+  private createEnemyUnits() {
+    const { width } = this.cameras.main;
+
+    if (this.isBoss) {
+      const bossHp = 300 + this.chapter * 200;
+      const bossAtk = 25 + this.chapter * 10;
+      const bossDef = 15 + this.chapter * 5;
+      const sprite = this.add.image(width / 2, 150, 'boss').setScale(2.5);
+      this.enemies = [{
+        character: createCharacter('boss', 'บอส', ClassType.Warrior, 5 + this.chapter),
+        isEnemy: true,
+        isBoss: true,
+        hp: bossHp,
+        maxHp: bossHp,
+        mp: 100,
+        maxMp: 100,
+        atk: bossAtk,
+        def: bossDef,
+        spd: 8,
+        name: 'จอมมาร',
+        isAlive: true,
+        defending: false,
+        sprite,
+      }];
+    } else {
+      const enemyCount = 1 + Math.floor(Math.random() * 2);
+      const enemyNames = ['สลิมป์', 'ก็อบลิน', 'ออร์ค', 'โครงกระดูก', 'ค้างคาวยักษ์'];
+      for (let i = 0; i < enemyCount; i++) {
+        const x = width / 2 - 80 + i * 160;
+        const name = enemyNames[Math.floor(Math.random() * enemyNames.length)];
+        const hp = 40 + this.chapter * 15;
+        const sprite = this.add.image(x, 160, 'enemy').setScale(2);
+        this.enemies.push({
+          character: createCharacter(`enemy_${i}`, name, ClassType.Warrior, 1 + this.chapter),
+          isEnemy: true,
+          isBoss: false,
+          hp,
+          maxHp: hp,
+          mp: 20,
+          maxMp: 20,
+          atk: 8 + this.chapter * 3,
+          def: 4 + this.chapter * 2,
+          spd: 6 + Math.floor(Math.random() * 8),
+          name,
+          isAlive: true,
+          defending: false,
+          sprite,
+        });
+      }
+    }
+
+    // Enemy name labels
+    this.enemies.forEach(e => {
+      this.add.text(e.sprite.x, e.sprite.y - 50, e.name, {
+        fontSize: '14px', color: '#ff4444', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      }).setOrigin(0.5);
+    });
+  }
+
+  private createBossPhases() {
+    this.bossPhases = [
+      { hpThreshold: 1.0, name: 'ปกติ', attackMultiplier: 1.0 },
+      { hpThreshold: 0.7, name: 'โกรธ', attackMultiplier: 1.3 },
+      { hpThreshold: 0.4, name: 'คลั่ง', attackMultiplier: 1.6 },
+      { hpThreshold: 0.15, name: 'สุดยอด', attackMultiplier: 2.0 },
+    ];
+  }
+
+  private createHpBars() {
+    this.hpBarContainer = this.add.container(0, 0);
+
+    this.heroes.forEach((unit, i) => {
+      const x = this.heroes[i].sprite.x;
+      const y = this.heroes[i].sprite.y + 40;
+      this.createUnitHpBar(unit, x, y);
+    });
+
+    this.enemies.forEach((unit, i) => {
+      const x = unit.sprite.x;
+      const y = unit.sprite.y + 40;
+      this.createUnitHpBar(unit, x, y);
+    });
+  }
+
+  private createUnitHpBar(unit: BattleUnit, x: number, y: number) {
+    const barWidth = 100;
+    const barHeight = 8;
+
+    // HP background
+    const hpBg = this.add.rectangle(x, y - 4, barWidth, barHeight, 0x333333).setOrigin(0.5);
+    // HP fill
+    const hpPct = unit.hp / unit.maxHp;
+    const hpColor = hpPct > 0.5 ? 0x4ecca3 : hpPct > 0.25 ? 0xf39c12 : 0xe74c3c;
+    const hpFill = this.add.rectangle(x - barWidth / 2, y - 4, barWidth * hpPct, barHeight, hpColor).setOrigin(0, 0.5);
+    unit.sprite.setData('hpFill', hpFill);
+    unit.sprite.setData('hpBg', hpBg);
+
+    // HP text
+    const hpText = this.add.text(x, y + 10, `HP ${unit.hp}/${unit.maxHp}`, {
+      fontSize: '11px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    }).setOrigin(0.5);
+    unit.sprite.setData('hpText', hpText);
+  }
+
+  private updateHpBar(unit: BattleUnit) {
+    const hpFill = unit.sprite.getData('hpFill') as Phaser.GameObjects.Rectangle;
+    const hpText = unit.sprite.getData('hpText') as Phaser.GameObjects.Text;
+    if (hpFill) {
+      const pct = Math.max(0, unit.hp / unit.maxHp);
+      hpFill.width = 100 * pct;
+      hpFill.fillColor = pct > 0.5 ? 0x4ecca3 : pct > 0.25 ? 0xf39c12 : 0xe74c3c;
+    }
+    if (hpText) {
+      hpText.setText(`HP ${Math.max(0, unit.hp)}/${unit.maxHp}`);
+    }
+  }
+
+  private calculateTurnOrder() {
+    const allUnits = [...this.heroes.filter(h => h.isAlive), ...this.enemies.filter(e => e.isAlive)];
+    this.turnOrder = allUnits.sort((a, b) => b.spd - a.spd);
+  }
+
+  private startNextTurn() {
+    // Rebuild turn list — only alive units remain
+    this.heroes = this.heroes.filter(h => h.isAlive || h.hp > 0);
+    this.enemies = this.enemies.filter(e => e.isAlive || e.hp > 0);
+
+    // Check win/lose
+    if (this.enemies.length === 0) {
+      this.victory();
+      return;
+    }
+    if (this.heroes.length === 0) {
+      this.defeat();
+      return;
+    }
+
+    // Rebuild turn order removing dead units, preserving speed-based order
+    const liveUnits = [...this.heroes.filter(h => h.isAlive), ...this.enemies.filter(e => e.isAlive)];
+    this.turnOrder = liveUnits.sort((a, b) => b.spd - a.spd);
+
+    // Wrap around when we reach the end of the turn order
+    if (this.currentTurnIndex >= this.turnOrder.length) {
+      this.currentTurnIndex = 0;
+      this.addLog(`🔄 ${TH.battle.turn} รอบใหม่!`);
+    }
+
+    // Find the next alive unit starting from currentTurnIndex
+    let found = false;
+    let attempts = 0;
+    while (!found && attempts < this.turnOrder.length) {
+      const candidate = this.turnOrder[this.currentTurnIndex];
+      if (candidate && candidate.isAlive && candidate.hp > 0) {
+        found = true;
+        this.currentUnit = candidate;
+
+        // Update turn indicator
+        this.turnIndicator.setText(`⚔️ ${TH.battle.turn} ${this.currentUnit.name}${this.currentUnit.isEnemy ? ' (ศัตรู)' : ''}`);
+
+        if (candidate.isEnemy) {
+          this.addLog(`👾 ${candidate.name} กำลังจะโจมตี`);
+          this.time.delayedCall(1000, () => this.enemyTurn(candidate));
+        } else {
+          this.addLog(`🎮 ${TH.battle.playerTurn}: ${candidate.name}`);
+          // Highlight active hero sprite
+          this.highlightActiveHero(candidate);
+          this.showActionMenu(candidate);
+        }
+      } else {
+        this.currentTurnIndex++;
+        if (this.currentTurnIndex >= this.turnOrder.length) {
+          this.currentTurnIndex = 0;
+        }
+      }
+      attempts++;
+    }
+
+    if (!found) {
+      // Shouldn't happen, but fallback
+      this.currentTurnIndex = 0;
+      this.time.delayedCall(200, () => this.startNextTurn());
+    }
+  }
+
+  /** Highlight the active hero with a glow effect */
+  private highlightActiveHero(unit: BattleUnit) {
+    // Reset all hero alphas
+    this.heroes.forEach(h => {
+      if (h.sprite) h.sprite.setAlpha(0.5);
+    });
+    // Highlight the active one
+    if (unit.sprite) {
+      unit.sprite.setAlpha(1);
+      this.tweens.add({
+        targets: unit.sprite,
+        scaleX: unit.sprite.scaleX * 1.1,
+        scaleY: unit.sprite.scaleY * 1.1,
+        duration: 400,
+        yoyo: true,
+        repeat: 2,
+      });
+    }
+  }
+
+  private showActionMenu(unit: BattleUnit) {
+    this.actionMenu.removeAll(true);
+    this.actionMenu.setVisible(true);
+
+    const { width } = this.cameras.main;
+    const menuY = 470;
+    const actions: { text: string; action: () => void }[] = [
+      { text: TH.battle.attack, action: () => this.doAttack(unit) },
+      { text: TH.battle.specialSkill, action: () => this.showSkillMenu(unit) },
+      { text: TH.battle.heal, action: () => this.tryHeal(unit) },
+      { text: TH.battle.defend, action: () => this.doDefend(unit) },
+      { text: TH.battle.escape, action: () => this.tryEscape(unit) },
+    ];
+
+    actions.forEach((btn, i) => {
+      const x = 80 + i * 145;
+      const bg = this.add.image(x, menuY, 'btn_blue_sm').setInteractive({ useHandCursor: true });
+      const txt = this.add.text(x, menuY, btn.text, {
+        fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      }).setOrigin(0.5);
+
+      bg.on('pointerover', () => bg.setScale(1.08));
+      bg.on('pointerout', () => bg.setScale(1));
+      bg.on('pointerdown', () => {
+        this.actionMenu.setVisible(false);
+        btn.action();
+      });
+
+      this.actionMenu.add(bg);
+      this.actionMenu.add(txt);
+    });
+  }
+
+  private async showSkillMenu(unit: BattleUnit) {
+    this.skillMenu.removeAll(true);
+    this.skillMenu.setVisible(true);
+
+    const { width } = this.cameras.main;
+    const skills = getCharacterSkills(unit.character);
+
+    if (skills.length === 0) {
+      this.addLog('❌ ไม่มีทักษะที่พร้อมใช้');
+      this.endTurn(unit);
+      return;
+    }
+
+    this.add.text(width / 2, 440, TH.battle.skillSelection, {
+      fontSize: '16px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    }).setOrigin(0.5);
+
+    skills.forEach((skill, i) => {
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      const x = width / 2 - 200 + col * 210;
+      const y = 480 + row * 50;
+
+      const questionLabel = `${TH.battle.questionRequired} ${skill.requiredQuestionCount} ${TH.battle.questions}`;
+      const diffLabel = `(${BattleQuestionSystem.getDifficultyLabel(skill.questionDifficulty)})`;
+      const mpOk = unit.mp >= skill.mpCost;
+
+      const bg = this.add.image(x, y, mpOk ? 'btn_green' : 'btn_red').setAlpha(mpOk ? 1 : 0.5);
+      const txt = this.add.text(x, y - 6, `${(TH.skills as any)[skill.nameKey] || skill.nameKey}`, {
+        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      }).setOrigin(0.5);
+      const info = this.add.text(x, y + 12, `${questionLabel} ${diffLabel} | MP:${skill.mpCost}`, {
+        fontSize: '10px', color: mpOk ? '#aaffaa' : '#ff8888', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      }).setOrigin(0.5);
+
+      this.skillMenu.add(bg);
+      this.skillMenu.add(txt);
+      this.skillMenu.add(info);
+
+      if (mpOk) {
+        bg.setInteractive({ useHandCursor: true });
+        bg.on('pointerdown', async () => {
+          this.skillMenu.setVisible(false);
+          await this.useSkill(unit, skill);
+        });
+      }
+    });
+
+    // Cancel button
+    const cancelBg = this.add.image(width / 2, 560, 'btn_red_sm').setInteractive({ useHandCursor: true });
+    const cancelTxt = this.add.text(width / 2, 560, TH.general.cancel, {
+      fontSize: '16px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    }).setOrigin(0.5);
+    this.skillMenu.add(cancelBg);
+    this.skillMenu.add(cancelTxt);
+    cancelBg.on('pointerdown', () => {
+      this.skillMenu.setVisible(false);
+      this.showActionMenu(unit);
+    });
+  }
+
+  private async useSkill(unit: BattleUnit, skill: SkillDefinition) {
+    this.isProcessing = true;
+    unit.mp -= skill.mpCost;
+
+    // Check if questions are available
+    const availableCount = await BattleQuestionSystem.getAvailableQuestionCount(skill);
+    if (availableCount < skill.requiredQuestionCount) {
+      this.addLog(`❌ ${TH.battle.noQuestionsLeft}`);
+      this.endTurn(unit);
+      return;
+    }
+
+    // Draw questions
+    const questions = await BattleQuestionSystem.drawQuestions(skill);
+    if (questions.length < skill.requiredQuestionCount) {
+      this.addLog(`❌ ${TH.battle.noQuestionsLeft}`);
+      this.endTurn(unit);
+      return;
+    }
+
+    // Show question panel
+    const answers = await this.showQuestionPanel(questions);
+
+    // Process results
+    const results = BattleQuestionSystem.processResults(questions, answers);
+    const effectiveness = results.effectivenessMultiplier;
+
+    if (results.allCorrect) {
+      this.addLog(`✅ ${TH.battle.skillEffectFull}`);
+    } else {
+      this.addLog(`⚠️ ${TH.battle.skillEffectReduced} (${results.correctCount}/${results.totalQuestions} ถูก)`);
+    }
+
+    // Apply skill effect
+    this.applySkillEffect(unit, skill, effectiveness);
+
+    this.isProcessing = false;
+    this.endTurn(unit);
+  }
+
+  private showQuestionPanel(questions: QuestionData[]): Promise<boolean[]> {
+    return new Promise((resolve) => {
+      const answers: boolean[] = [];
+      let currentQ = 0;
+
+      this.questionOverlay.removeAll(true);
+      this.questionOverlay.setVisible(true);
+
+      const { width, height } = this.cameras.main;
+
+      const showQuestion = () => {
+        this.questionOverlay.removeAll(true);
+
+        const q = questions[currentQ];
+
+        // Overlay background
+        const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.85);
+        this.questionOverlay.add(overlay);
+
+        // Question panel
+        const panel = this.add.rectangle(width / 2, height / 2 - 30, 550, 350, 0x1a1a3e).setStrokeStyle(2, 0xf39c12);
+        this.questionOverlay.add(panel);
+
+        // Progress
+        const progress = this.add.text(width / 2, height / 2 - 160,
+          `${TH.battle.questionProgress} ${currentQ + 1}${TH.battle.of}${questions.length}`,
+          { fontSize: '18px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' },
+        ).setOrigin(0.5);
+        this.questionOverlay.add(progress);
+
+        // Question text
+        const questionText = this.add.text(width / 2, height / 2 - 110, q.prompt, {
+          fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+          wordWrap: { width: 500 }, align: 'center',
+        }).setOrigin(0.5);
+        this.questionOverlay.add(questionText);
+
+        // Choices
+        q.choices.forEach((choice, i) => {
+          const y = height / 2 - 30 + i * 55;
+          const choiceBg = this.add.rectangle(width / 2, y, 450, 45, 0x0a0a2e).setStrokeStyle(1, 0x4ecca3);
+          choiceBg.setInteractive({ useHandCursor: true });
+          this.questionOverlay.add(choiceBg);
+
+          const choiceText = this.add.text(width / 2, y, `${i + 1}. ${choice}`, {
+            fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+          }).setOrigin(0.5);
+          this.questionOverlay.add(choiceText);
+
+          choiceBg.on('pointerover', () => choiceBg.setStrokeStyle(2, 0xf39c12));
+          choiceBg.on('pointerout', () => choiceBg.setStrokeStyle(1, 0x4ecca3));
+          choiceBg.on('pointerdown', () => {
+            const isCorrect = i === q.correctIndex;
+            answers.push(isCorrect);
+
+            // Show correct/wrong feedback
+            const feedback = this.add.text(width / 2, height / 2 + 130,
+              isCorrect ? `✅ ${TH.battle.correct}` : `❌ ${TH.battle.wrong}`,
+              {
+                fontSize: '28px',
+                color: isCorrect ? '#4ecca3' : '#e74c3c',
+                fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+                fontStyle: 'bold',
+              },
+            ).setOrigin(0.5);
+            this.questionOverlay.add(feedback);
+
+            this.time.delayedCall(800, () => {
+              currentQ++;
+              if (currentQ < questions.length) {
+                showQuestion();
+              } else {
+                this.questionOverlay.setVisible(false);
+                resolve(answers);
+              }
+            });
+          });
+        });
+      };
+
+      showQuestion();
+    });
+  }
+
+  private applySkillEffect(unit: BattleUnit, skill: SkillDefinition, effectiveness: number) {
+    const power = skill.basePower * effectiveness;
+
+    switch (skill.targetType) {
+      case SkillTarget.SingleEnemy:
+      case SkillTarget.AllEnemies: {
+        const targets = this.enemies.filter(e => e.isAlive);
+        targets.forEach(target => {
+          const damage = Math.max(1, Math.floor((unit.atk * power) - target.def * 0.5));
+          target.hp = Math.max(0, target.hp - damage);
+          this.updateHpBar(target);
+          const dmgText = effectiveness < 1 ? `${Math.floor(damage)} (ลดลง)` : `${damage}`;
+          this.addLog(`⚡ ${unit.name} ใช้ทักษะ! สร้างดาเมจ ${dmgText} แก่ ${target.name}`);
+
+          // Flash enemy
+          this.tweens.add({
+            targets: target.sprite,
+            x: target.sprite.x - 5,
+            duration: 50,
+            yoyo: true,
+            repeat: 3,
+          });
+        });
+        break;
+      }
+      case SkillTarget.Self: {
+        if (skill.id === 'shieldBlock' || skill.id === 'goldenArmor' || skill.id === 'kingsShield') {
+          unit.defending = true;
+          this.addLog(`🛡️ ${unit.name} ใช้ ${(TH.skills as any)[skill.nameKey]} ป้องกันตัว`);
+        } else if (skill.id === 'arcaneSurge' || skill.id === 'quickStep') {
+          // Buff effects
+          this.addLog(`✨ ${unit.name} ใช้ ${(TH.skills as any)[skill.nameKey]} เพิ่มพลัง`);
+        }
+        break;
+      }
+      case SkillTarget.SingleAlly: {
+        const target = this.heroes.filter(h => h.isAlive && h !== unit).sort((a, b) => a.hp - b.hp)[0] || unit;
+        if (skill.id === 'heal' || skill.id === 'panacea') {
+          const heal = Math.floor(target.maxHp * power);
+          target.hp = Math.min(target.maxHp, target.hp + heal);
+          this.updateHpBar(target);
+          this.addLog(`💚 ${unit.name} รักษา ${target.name} HP +${heal}`);
+        }
+        break;
+      }
+      case SkillTarget.AllAllies: {
+        this.heroes.filter(h => h.isAlive).forEach(target => {
+          if (skill.id === 'sacredBlessing' || skill.id === 'regen' || skill.id === 'sanctuary') {
+            const heal = Math.floor(target.maxHp * power);
+            target.hp = Math.min(target.maxHp, target.hp + heal);
+            this.updateHpBar(target);
+          }
+        });
+        this.addLog(`💚 ${unit.name} ใช้ ${(TH.skills as any)[skill.nameKey] || ''} รักษาทั้งทีม`);
+        break;
+      }
+    }
+  }
+
+  private doAttack(unit: BattleUnit) {
+    const target = this.enemies.filter(e => e.isAlive).sort((a, b) => a.hp - b.hp)[0];
+    if (!target) return;
+
+    const damage = Math.max(1, Math.floor(unit.atk * 1.0 - target.def * 0.3));
+    target.hp = Math.max(0, target.hp - damage);
+    this.updateHpBar(target);
+    this.addLog(`⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
+
+    // Flash target
+    this.tweens.add({
+      targets: target.sprite,
+      x: target.sprite.x - 5,
+      duration: 50,
+      yoyo: true,
+      repeat: 3,
+    });
+
+    this.endTurn(unit);
+  }
+
+  private doDefend(unit: BattleUnit) {
+    unit.defending = true;
+    this.addLog(`🛡️ ${unit.name} ป้องกันตัว!`);
+    this.endTurn(unit);
+  }
+
+  private async tryHeal(unit: BattleUnit) {
+    // Healing items or skill - simplified: restore 30% HP
+    const healAmt = Math.floor(unit.maxHp * 0.3);
+    unit.hp = Math.min(unit.maxHp, unit.hp + healAmt);
+    this.updateHpBar(unit);
+    this.addLog(`💚 ${unit.name} รักษาตัวเอง HP +${healAmt}`);
+    this.endTurn(unit);
+  }
+
+  private async tryEscape(unit: BattleUnit) {
+    const escapeChance = 0.4 + (unit.spd / 100);
+    if (Math.random() < escapeChance && !this.isBoss) {
+      this.addLog(`🏃 ${TH.battle.youEscape}`);
+      this.scene.start('AdventureScene', { party: this.party, saveSlot: this.saveSlot });
+    } else {
+      this.addLog(`❌ ${TH.battle.escapeFailed}`);
+      this.endTurn(unit);
+    }
+  }
+
+  private async enemyTurn(unit: BattleUnit) {
+    // Boss phase check
+    if (unit.isBoss && this.enemies.length > 0) {
+      this.checkBossPhase(unit);
+    }
+
+    // Pick a random hero target
+    const target = this.heroes.filter(h => h.isAlive).sort(() => Math.random() - 0.5)[0];
+    if (!target) return;
+
+    // Get boss phase multiplier
+    let bossMult = 1.0;
+    if (unit.isBoss) {
+      const phase = this.bossPhases[this.bossPhase];
+      if (phase) bossMult = phase.attackMultiplier;
+    }
+
+    const damage = Math.max(1, Math.floor((unit.atk * bossMult) - (target.def * 0.3 * (target.defending ? 2 : 1))));
+    target.hp = Math.max(0, target.hp - damage);
+    target.defending = false;
+    this.updateHpBar(target);
+    this.addLog(`👊 ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
+
+    // Flash target
+    this.tweens.add({
+      targets: target.sprite,
+      x: target.sprite.x - 5,
+      duration: 50,
+      yoyo: true,
+      repeat: 3,
+    });
+
+    this.endTurn(unit);
+  }
+
+  private checkBossPhase(unit: BattleUnit) {
+    const hpPct = unit.hp / unit.maxHp;
+    for (let i = this.bossPhases.length - 1; i >= 0; i--) {
+      if (hpPct <= this.bossPhases[i].hpThreshold && this.bossPhase < i) {
+        this.bossPhase = i;
+        const phase = this.bossPhases[i];
+        this.addLog(`⚠️ ${TH.battle.bossEnrage}! ${phase.name} — โจมตี x${phase.attackMultiplier}`);
+        this.addLog(`📖 ตอบคำถามให้ถูกเพื่อทำดาเมจ!`);
+
+        // Screen shake
+        this.cameras.main.shake(300, 0.01);
+        break;
+      }
+    }
+  }
+
+  private endTurn(unit: BattleUnit) {
+    // Check if any hero died
+    this.heroes = this.heroes.filter(h => {
+      if (h.hp <= 0) {
+        h.isAlive = false;
+        h.sprite.setAlpha(0.3);
+        this.addLog(`💀 ${h.name} ล้มลง!`);
+        return false;
+      }
+      return true;
+    });
+
+    this.enemies = this.enemies.filter(e => {
+      if (e.hp <= 0) {
+        e.isAlive = false;
+        e.sprite.setAlpha(0.3);
+        this.addLog(`💀 ${e.name} ถูกกำจัด!`);
+        return false;
+      }
+      return true;
+    });
+
+    this.currentTurnIndex++;
+    // Reset active hero highlight
+    this.heroes.forEach(h => {
+      if (h.sprite) h.sprite.setAlpha(1);
+    });
+    this.time.delayedCall(500, () => this.startNextTurn());
+  }
+
+  private async victory() {
+    SoundManager.levelUp();
+    this.addLog(`🎉 ${TH.battle.victory}`);
+
+    // Calculate rewards
+    const xpReward = 50 + this.chapter * 30;
+    const goldReward = 30 + this.chapter * 20;
+    this.gold += goldReward;
+
+    this.addLog(`✨ ได้รับ EXP ${xpReward} ทุกตัว`);
+    this.addLog(`💰 ได้รับทอง ${goldReward}`);
+
+    // Apply XP and check level ups
+    for (const char of this.party) {
+      const result = addXp(char, xpReward);
+      if (result.leveledUp) {
+        this.addLog(`⬆️ ${char.name} เลเวล ${char.level}!`);
+      }
+      if (result.evolved) {
+        this.addLog(`🌟 ${char.name} ${TH.levelUp.evolvedTo} ${(TH.classes as any)[`${char.classType}Evolved`] || ''}!`);
+      }
+    }
+
+    // Auto-save
+    const saveData = createNewSave(this.party);
+    saveData.id = this.saveSlot;
+    saveData.gold = this.gold;
+    saveData.currentChapter = this.chapter + 1;
+    saveData.currentNodeIndex = this.nodeIndex;
+    SaveSystem.save(this.saveSlot, saveData);
+
+    this.time.delayedCall(2500, () => {
+      this.scene.start('AdventureScene', { party: this.party, saveSlot: this.saveSlot });
+    });
+  }
+
+  private defeat() {
+    this.addLog(`💔 ${TH.battle.defeat}`);
+    this.time.delayedCall(2000, () => {
+      this.scene.start('MainMenuScene');
+    });
+  }
+
+  private async checkQuestionAvailability(): Promise<number> {
+    let total = 0;
+    for (const hero of this.heroes) {
+      const skills = getCharacterSkills(hero.character);
+      for (const skill of skills) {
+        total += await BattleQuestionSystem.getAvailableQuestionCount(skill);
+      }
+    }
+    return total;
+  }
+
+  private addLog(text: string) {
+    const { width } = this.cameras.main;
+    const logEntry = this.add.text(width / 2, this.logY, text, {
+      fontSize: '12px', color: '#dddddd', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      wordWrap: { width: 750 }, align: 'center',
+    }).setOrigin(0.5).setAlpha(0.9);
+
+    this.battleLog.push(logEntry);
+    this.logY += 20;
+
+    // Keep last 5 logs visible
+    if (this.battleLog.length > 5) {
+      const old = this.battleLog.shift();
+      old?.destroy();
+      this.logY -= 20;
+    }
+  }
+}
