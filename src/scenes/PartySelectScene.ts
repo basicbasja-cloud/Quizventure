@@ -57,27 +57,27 @@ export class PartySelectScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // Title
-    this.add.text(width / 2, 72, TH.partySelect.title, {
-      fontSize: '48px',
+    this.add.text(width / 2, 40, TH.partySelect.title, {
+      fontSize: '32px',
       color: '#4ecca3',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 135, TH.partySelect.subtitle, {
-      fontSize: '24px',
+    this.add.text(width / 2, 75, TH.partySelect.subtitle, {
+      fontSize: '16px',
       color: '#aaaaaa',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5);
 
     // Class cards in a 3x2 grid
-    const cardWidth = 520;
-    const cardHeight = 360;
+    const cardWidth = 220;
+    const cardHeight = 200;
     const startX = width / 2 - (cardWidth + 20);
-    const startY = 230;
+    const startY = 130;
     const cols = 3;
-    const spacingX = cardWidth + 30;
-    const spacingY = cardHeight + 30;
+    const spacingX = cardWidth + 15;
+    const spacingY = cardHeight + 15;
 
     ALL_CLASSES.forEach((classType, i) => {
       const col = i % cols;
@@ -120,15 +120,15 @@ export class PartySelectScene extends Phaser.Scene {
     // Character sprite placeholder
     const charKey = `char_${classType}`;
     if (this.textures.exists(charKey)) {
-      const sprite = this.add.image(0, -80, charKey).setScale(3);
-      sprite.setData('origScale', 3);
+      const sprite = this.add.image(0, -45, charKey).setScale(2);
+      sprite.setData('origScale', 2);
       startIdleAnimation(sprite);
       container.add(sprite);
     }
 
     // Class name
-    const nameText = this.add.text(0, 40, CLASS_NAMES_TH[classType], {
-      fontSize: '28px',
+    const nameText = this.add.text(0, 20, CLASS_NAMES_TH[classType], {
+      fontSize: '20px',
       color: '#ffffff',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       fontStyle: 'bold',
@@ -136,8 +136,8 @@ export class PartySelectScene extends Phaser.Scene {
     container.add(nameText);
 
     // Description
-    const descText = this.add.text(0, 90, CLASS_DESC_TH[classType], {
-      fontSize: '15px',
+    const descText = this.add.text(0, 50, CLASS_DESC_TH[classType], {
+      fontSize: '11px',
       color: '#999999',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       wordWrap: { width: w - 20 },
@@ -146,8 +146,8 @@ export class PartySelectScene extends Phaser.Scene {
     container.add(descText);
 
     // Selected indicator
-    const selectedIndicator = this.add.text(w / 2 - 30, -h / 2 + 20, '✓', {
-      fontSize: '32px',
+    const selectedIndicator = this.add.text(w / 2 - 15, -h / 2 + 10, '✓', {
+      fontSize: '20px',
       color: '#4ecca3',
       fontFamily: 'Arial, sans-serif',
     }).setOrigin(0.5).setVisible(false);
@@ -196,9 +196,9 @@ export class PartySelectScene extends Phaser.Scene {
   }
 
   private createConfirmButton(width: number, height: number) {
-    const confirmBg = this.add.image(width / 2, height - 80, 'btn_gold_lg').setAlpha(0.5);
-    const confirmText = this.add.text(width / 2, height - 80, TH.partySelect.confirm, {
-      fontSize: '28px',
+    const confirmBg = this.add.image(width / 2, height - 50, 'btn_gold_lg').setAlpha(0.5);
+    const confirmText = this.add.text(width / 2, height - 50, TH.partySelect.confirm, {
+      fontSize: '22px',
       color: '#ffffff',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5);

@@ -70,7 +70,7 @@ export class MainMenuScene extends Phaser.Scene {
     ];
 
     const startY = height * 0.33;
-    const spacing = 126;
+    const spacing = 70;
 
     buttons.forEach((btn, i) => {
       const y = startY + i * spacing;
@@ -117,14 +117,14 @@ export class MainMenuScene extends Phaser.Scene {
 
   private showSettings() {
     // Simple settings overlay
-    const overlay = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0.7).setInteractive();
-    const panel = this.add.rectangle(960, 540, 960, 540, 0x16213e).setStrokeStyle(2, 0x4ecca3);
+    const overlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7).setInteractive();
+    const panel = this.add.rectangle(400, 300, 400, 300, 0x16213e).setStrokeStyle(2, 0x4ecca3);
 
-    const title = this.add.text(960, 324, TH.settings.title, {
+    const title = this.add.text(400, 180, TH.settings.title, {
       fontSize: '28px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5);
 
-    const closeBtn = this.add.text(960, 756, TH.general.close, {
+    const closeBtn = this.add.text(400, 420, TH.general.close, {
       fontSize: '20px', color: '#e74c3c', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
