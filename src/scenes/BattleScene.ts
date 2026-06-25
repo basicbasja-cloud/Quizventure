@@ -154,14 +154,12 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private createHeroUnits() {
-    // FF-style: heroes on RIGHT, diagonal formation, smaller
+    // FF-style: heroes on LEFT, diagonal formation bottom→top
     const total = this.party.length;
     this.heroes = this.party.map((char, i) => {
-      const isEven = total === 4;
-      // Stagger diagonally: back chars higher and further left
       const fromBack = total - 1 - i;
-      const x = 650 - fromBack * 90;
-      const y = 300 + fromBack * 50;
+      const x = 100 + fromBack * 55;
+      const y = 420 - fromBack * 50;
       const charKey = `char_${char.classType}`;
       const sprite = this.add.image(x, y, charKey).setScale(1.2);
       sprite.setData('origScale', 1.2);
@@ -209,11 +207,11 @@ export class BattleScene extends Phaser.Scene {
       const bossHp = Math.floor(400 * statMult);
       const bossAtk = Math.floor(30 * statMult);
       const bossDef = Math.floor(18 * statMult);
-      const sprite = this.add.image(180, 220, 'boss').setScale(2.5);
+      const sprite = this.add.image(620, 230, 'boss').setScale(2.5);
       sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
-      sprite.setData('homeX', 180);
-      sprite.setData('homeY', 220);
+      sprite.setData('homeX', 620);
+      sprite.setData('homeY', 230);
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
@@ -243,8 +241,8 @@ export class BattleScene extends Phaser.Scene {
       const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
       const enemyCount = 2; // 2 enemies, balanced
       for (let i = 0; i < enemyCount; i++) {
-        const x = 80 + i * 140;
-        const y = 200 + i * 60;
+        const x = 640 - i * 90;
+        const y = 190 + i * 60;
         const name = pool[Math.floor(Math.random() * pool.length)];
         const statMult = 1 + this.chapter * 0.65;
         const hp = Math.floor(60 * statMult);
