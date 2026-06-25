@@ -11,6 +11,7 @@ export interface SaveSlot {
   gold: number;
   currentChapter: number;
   currentNodeIndex: number;
+  zoneOrder: string[];
   playTime: number; // seconds
   timestamp: number;
 }
@@ -23,6 +24,7 @@ export function createEmptySaveSlot(id: number): SaveSlot {
     gold: 0,
     currentChapter: 1,
     currentNodeIndex: 0,
+    zoneOrder: [],
     playTime: 0,
     timestamp: 0,
   };
@@ -36,6 +38,7 @@ export function createNewSave(party: Character[]): SaveSlot {
     gold: 100,
     currentChapter: 1,
     currentNodeIndex: 0,
+    zoneOrder: [],
     playTime: 0,
     timestamp: Date.now(),
   };

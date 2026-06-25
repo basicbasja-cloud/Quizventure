@@ -61,6 +61,7 @@ export class BattleScene extends Phaser.Scene {
   private chapter = 0;
   private nodeIndex = 0;
   private saveSlot = 0;
+  private zoneOrder: string[] = [];
   private turnIndicator!: Phaser.GameObjects.Text;
   private turnOrderCalculated = false;
 
@@ -86,15 +87,16 @@ export class BattleScene extends Phaser.Scene {
     chapter?: number;
     nodeIndex?: number;
     saveSlot?: number;
-
+    zoneOrder?: string[];
   }) {
     const { width, height } = this.cameras.main;
 
     this.party = data.party;
     this.isBoss = data.isBoss ?? false;
-    this.chapter = data.chapter ?? 0;
+    this.chapter = Math.floor((data.nodeIndex ?? 0) / 3);
     this.nodeIndex = data.nodeIndex ?? 0;
     this.saveSlot = data.saveSlot ?? 0;
+    this.zoneOrder = data.zoneOrder ?? [];
 
     this.bossPhase = 0;
     this.battleLog = [];
@@ -196,7 +198,7 @@ export class BattleScene extends Phaser.Scene {
 
     if (this.isBoss) {
       const bossNames = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
-      const bossName = bossNames[Math.min(this.chapter, 2)] || 'จอมมาร';
+      const bossName = bossNames[Math.min(Math.floor((this.nodeIndex ?? 0) / 4), 2)] || 'จอมมาร';
       const statMult = 1 + this.chapter * 0.7;
       const bossHp = Math.floor(300 * statMult);
       const bossAtk = Math.floor(25 * statMult);
@@ -209,7 +211,7 @@ export class BattleScene extends Phaser.Scene {
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
-        character: createCharacter('boss', bossName, ClassType.Warrior, 5 + this.chapter),
+        character: createCharacter('boss', bossName, ClassType.Warrior, 3 + Math.floor((this.nodeIndex ?? 0) / 2)),
         isEnemy: true,
         isBoss: true,
         hp: bossHp,
@@ -231,7 +233,7 @@ export class BattleScene extends Phaser.Scene {
         ['ก็อบลิน', 'ออร์ค', 'สเคเลตัน'],
         ['มังกรน้อย', 'เดม่อน', 'วิญญาณ'],
       ];
-      const pool = enemyPool[Math.min(this.chapter, 2)] || enemyPool[0];
+      const pool = enemyPool[Math.min(Math.floor((this.nodeIndex ?? 0) / 4), 2)] || enemyPool[0];
       const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
       const enemyCount = 1 + Math.floor(Math.random() * 2);
       for (let i = 0; i < enemyCount; i++) {
@@ -250,15 +252,15 @@ export class BattleScene extends Phaser.Scene {
         sprite.setDepth(15 - i);
         startIdleAnimation(sprite);
         this.enemies.push({
-          character: createCharacter(`enemy_${i}`, name, ClassType.Warrior, 1 + this.chapter),
+          character: createCharacter(`enemy_${i}`, name, ClassType.Warrior, 1 + Math.floor((this.nodeIndex ?? 0) / 3)),
           isEnemy: true,
           isBoss: false,
           hp,
           maxHp: hp,
           mp: 20,
           maxMp: 20,
-          atk: 8 + this.chapter * 3,
-          def: 4 + this.chapter * 2,
+          atk: 8 + Math.floor((this.nodeIndex ?? 0) / 3) * 3,
+          def: 4 + Math.floor((this.nodeIndex ?? 0) / 3) * 2,
           spd: 6 + Math.floor(Math.random() * 8),
           name,
           isAlive: true,
@@ -936,7 +938,7 @@ export class BattleScene extends Phaser.Scene {
     this.addLog(`🎉 ${TH.battle.victory}`);
 
     // Calculate rewards
-    const xpReward = 50 + this.chapter * 30;
+    const xpReward = 30 + (this.nodeIndex ?? 0) * 10;
 
     this.addLog(`✨ ได้รับ EXP ${xpReward} ทุกตัว`);
 
@@ -955,8 +957,9 @@ export class BattleScene extends Phaser.Scene {
     const saveData = createNewSave(this.party);
     saveData.id = this.saveSlot;
 
-    saveData.currentChapter = this.chapter + 1;
+    saveData.currentChapter = Math.floor((this.nodeIndex ?? 0) / 3) + 1;
     saveData.currentNodeIndex = this.nodeIndex;
+    saveData.zoneOrder = this.zoneOrder;
     SaveSystem.save(this.saveSlot, saveData);
 
     this.time.delayedCall(2500, () => {
