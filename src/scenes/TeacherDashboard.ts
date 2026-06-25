@@ -60,18 +60,18 @@ export class TeacherDashboard extends Phaser.Scene {
     backBtn.on('pointerdown', () => this.scene.start('MainMenuScene'));
 
     // Action buttons row
-    const addBtn = this.createTextButton(width / 2 - 180, 70, TH.teacher.addQuestion, () => this.showForm('add'));
-    const importBtn = this.createTextButton(width / 2 - 50, 70, TH.teacher.importQuestions, () => this.showImportDialog());
-    const exportBtn = this.createTextButton(width / 2 + 80, 70, TH.teacher.exportQuestions, () => this.exportQuestions());
-    const resetBtn = this.createTextButton(width / 2 + 200, 70, 'รีเซ็ตการใช้', () => this.resetUses());
+    const addBtn = this.createTextButton(width / 2 - 210, 70, TH.teacher.addQuestion, () => this.showForm('add'));
+    const importBtn = this.createTextButton(width / 2 - 90, 70, TH.teacher.importQuestions, () => this.showImportDialog());
+    const exportBtn = this.createTextButton(width / 2 + 20, 70, TH.teacher.exportQuestions, () => this.exportQuestions());
+    const templateBtn = this.createTextButton(width / 2 + 130, 70, '📄 เทมเพลต', () => this.downloadTemplate());
+    const resetBtn = this.createTextButton(width / 2 + 240, 70, 'รีเซ็ต', () => this.resetUses());
 
-    // Filter buttons
+    // Filter buttons (more compact spacing)
     const filterY = 105;
-    const filterAll = this.createSmallButton(70, filterY, TH.teacher.allCategories, () => { this.filterCategory = 'all'; this.refreshList(); });
+    const filterAll = this.createSmallButton(30, filterY, TH.teacher.allCategories, () => { this.filterCategory = 'all'; this.refreshList(); });
     ALL_CLASSES.forEach((cls, i) => {
-      const key = `class_${cls}`;
       const label = (TH.classes as any)[cls] || cls;
-      this.createSmallButton(70 + (i + 1) * 110, filterY, label, () => { this.filterCategory = cls; this.refreshList(); });
+      this.createSmallButton(70 + i * 100, filterY, label, () => { this.filterCategory = cls; this.refreshList(); });
     });
 
     // List container (scrollable)
@@ -80,11 +80,28 @@ export class TeacherDashboard extends Phaser.Scene {
     // Form container (hidden by default)
     this.formContainer = this.add.container(0, 0).setVisible(false);
 
+    // Scroll support: mouse wheel + up/down keys
+    this.input.on('wheel', (_pointer: any, _gos: any, _dx: number, dy: number) => {
+      const maxScroll = Math.max(0, this.questions.length * 36 + 170 - 540);
+      this.scrollY = Phaser.Math.Clamp(this.scrollY + dy * 0.5, 0, maxScroll);
+      this.refreshList();
+    });
+    this.input.keyboard?.on('keydown-UP', () => {
+      this.scrollY = Math.max(0, this.scrollY - 36);
+      this.refreshList();
+    });
+    this.input.keyboard?.on('keydown-DOWN', () => {
+      const maxScroll = Math.max(0, this.questions.length * 36 + 170 - 540);
+      this.scrollY = Math.min(maxScroll, this.scrollY + 36);
+      this.refreshList();
+    });
+
     await this.refreshList();
   }
 
   private async refreshList() {
     this.listContainer.removeAll(true);
+    this.scrollY = 0;
 
     const allQuestions = await QuestionBank.getAll();
     this.questions = this.filterCategory === 'all'
@@ -92,6 +109,14 @@ export class TeacherDashboard extends Phaser.Scene {
       : allQuestions.filter(q => q.category === this.filterCategory);
 
     const startY = 140;
+    const maxVisibleY = 540; // clip below this
+
+    // Create a mask for the list area (clips items below the screen)
+    const maskShape = this.make.graphics({ x: 0, y: 0 });
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(0, startY - 5, 800, maxVisibleY - startY + 5);
+    const mask = maskShape.createGeometryMask();
+    this.listContainer.setMask(mask);
 
     // Header background
     const headerBg = this.add.rectangle(400, startY + 11, 760, 28, 0x0a1a2e, 0.9);
@@ -128,7 +153,7 @@ export class TeacherDashboard extends Phaser.Scene {
     }
 
     this.questions.forEach((q, i) => {
-      const y = startY + 30 + i * 36;
+      const y = startY + 30 + i * 36 - this.scrollY;
       // Row background for contrast
       const rowBg = this.add.rectangle(400, y + 8, 760, 32, i % 2 === 0 ? 0x0a0a2e : 0x12123e, 0.85);
       this.listContainer.add(rowBg);
@@ -314,6 +339,33 @@ export class TeacherDashboard extends Phaser.Scene {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'questions.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private downloadTemplate() {
+    const template = [
+      {
+        prompt: 'แม่น้ำที่ยาวที่สุดในโลกคืออะไร?',
+        choices: ['แม่น้ำไนล์', 'แม่น้ำแอมะซอน', 'แม่น้ำมิสซิสซิปปี', 'แม่น้ำแยงซี'],
+        correctIndex: 0,
+        category: 'warrior',
+        difficulty: 1,
+      },
+      {
+        prompt: 'ดาวเคราะห์ดวงใดใหญ่ที่สุดในระบบสุริยะ?',
+        choices: ['ดาวอังคาร', 'ดาวพฤหัสบดี', 'ดาวเสาร์', 'ดาวเนปจูน'],
+        correctIndex: 1,
+        category: 'archer',
+        difficulty: 1,
+      },
+    ];
+    const json = JSON.stringify(template, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'question_template.json';
     a.click();
     URL.revokeObjectURL(url);
   }
