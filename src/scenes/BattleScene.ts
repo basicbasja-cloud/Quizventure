@@ -195,9 +195,12 @@ export class BattleScene extends Phaser.Scene {
     const { width } = this.cameras.main;
 
     if (this.isBoss) {
-      const bossHp = 300 + this.chapter * 200;
-      const bossAtk = 25 + this.chapter * 10;
-      const bossDef = 15 + this.chapter * 5;
+      const bossNames = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
+      const bossName = bossNames[Math.min(this.chapter, 2)] || 'จอมมาร';
+      const statMult = 1 + this.chapter * 0.7;
+      const bossHp = Math.floor(300 * statMult);
+      const bossAtk = Math.floor(25 * statMult);
+      const bossDef = Math.floor(15 * statMult);
       const sprite = this.add.image(180, 380, 'boss').setScale(2.5);
       sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
@@ -206,7 +209,7 @@ export class BattleScene extends Phaser.Scene {
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
-        character: createCharacter('boss', 'จอมมาร', ClassType.Warrior, 5 + this.chapter),
+        character: createCharacter('boss', bossName, ClassType.Warrior, 5 + this.chapter),
         isEnemy: true,
         isBoss: true,
         hp: bossHp,
@@ -216,19 +219,29 @@ export class BattleScene extends Phaser.Scene {
         atk: bossAtk,
         def: bossDef,
         spd: 8,
-        name: 'จอมมาร',
+        name: bossName,
         isAlive: true,
         defending: false,
         sprite,
       }];
     } else {
+      // Enemies by chapter (difficulty scales)
+      const enemyPool: string[][] = [
+        ['สลิมป์', 'สลิมป์พิษ', 'สลิมป์ยักษ์'],
+        ['ก็อบลิน', 'ออร์ค', 'สเคเลตัน'],
+        ['มังกรน้อย', 'เดม่อน', 'วิญญาณ'],
+      ];
+      const pool = enemyPool[Math.min(this.chapter, 2)] || enemyPool[0];
+      const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
       const enemyCount = 1 + Math.floor(Math.random() * 2);
-      const enemyNames = ['สลิมป์', 'ก็อบลิน', 'ออร์ค', 'โครงกระดูก', 'ค้างคาวยักษ์'];
       for (let i = 0; i < enemyCount; i++) {
         const x = 150 + i * 140;
-        const y = 370 + i * 45; // rear enemies higher, front lower
-        const name = enemyNames[Math.floor(Math.random() * enemyNames.length)];
-        const hp = 40 + this.chapter * 15;
+        const y = 370 + i * 45;
+        const name = pool[Math.floor(Math.random() * pool.length)];
+        const statMult = 1 + this.chapter * 0.5;
+        const hp = Math.floor(40 * statMult);
+        const atk = Math.floor(8 * statMult);
+        const def = Math.floor(4 * statMult);
         const sprite = this.add.image(x, y, 'enemy').setScale(2);
         sprite.setData('origScale', 2);
         sprite.setData('origTint', 0xffffff);
@@ -276,35 +289,73 @@ export class BattleScene extends Phaser.Scene {
   private createHpBars() {
     this.hpBarContainer = this.add.container(0, 0);
 
+    // Heroes: HP bar below sprite
     this.heroes.forEach((unit, i) => {
       const x = this.heroes[i].sprite.x;
-      const y = this.heroes[i].sprite.y + 40;
-      this.createUnitHpBar(unit, x, y);
+      const y = this.heroes[i].sprite.y + 35;
+      this.createUnitHpBar(unit, x, y, 80, 7);
     });
 
-    this.enemies.forEach((unit, i) => {
+    // Enemies: HP bar below sprite
+    this.enemies.forEach((unit) => {
       const x = unit.sprite.x;
-      const y = unit.sprite.y + 40;
-      this.createUnitHpBar(unit, x, y);
+      const y = unit.sprite.y + 35;
+      this.createUnitHpBar(unit, x, y, 80, 7);
     });
+
+    // Boss: Dark Souls style — big bar at the TOP of the screen
+    const boss = this.enemies.find(e => e.isBoss);
+    if (boss) {
+      const sprite = boss.sprite;
+      const { width } = this.cameras.main;
+      // Remove the regular HP bar for boss
+      const oldFill = sprite.getData('hpFill');
+      const oldBg = sprite.getData('hpBg');
+      const oldText = sprite.getData('hpText');
+      if (oldFill) oldFill.destroy();
+      if (oldBg) oldBg.destroy();
+      if (oldText) oldText.destroy();
+
+      // Boss name at top
+      this.add.text(width / 2, 70, `👑 ${boss.name}`, {
+        fontSize: '18px', color: '#ff4444', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
+      }).setOrigin(0.5).setDepth(30);
+
+      // Boss HP bar — wide bar at top
+      const barW = 400;
+      const barH = 18;
+      const barX = width / 2;
+      const barY = 95;
+
+      const hpBg = this.add.rectangle(barX, barY, barW, barH, 0x331111).setOrigin(0.5).setDepth(30);
+      hpBg.setStrokeStyle(2, 0xff4444);
+
+      const hpFill = this.add.rectangle(barX - barW / 2, barY, barW, barH, 0xcc2222).setOrigin(0, 0.5).setDepth(31);
+      sprite.setData('hpFill', hpFill);
+      sprite.setData('hpBg', hpBg);
+
+      const hpText = this.add.text(barX, barY, `HP ${boss.hp}/${boss.maxHp}`, {
+        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(32);
+      sprite.setData('hpText', hpText);
+    }
   }
 
-  private createUnitHpBar(unit: BattleUnit, x: number, y: number) {
-    const barWidth = 100;
-    const barHeight = 8;
-
+  private createUnitHpBar(unit: BattleUnit, x: number, y: number, barWidth: number, barHeight: number) {
     // HP background
-    const hpBg = this.add.rectangle(x, y - 4, barWidth, barHeight, 0x333333).setOrigin(0.5).setDepth(22);
+    const hpBg = this.add.rectangle(x, y, barWidth, barHeight, 0x332222).setOrigin(0.5).setDepth(22);
     // HP fill
     const hpPct = unit.hp / unit.maxHp;
     const hpColor = hpPct > 0.5 ? 0x4ecca3 : hpPct > 0.25 ? 0xf39c12 : 0xe74c3c;
-    const hpFill = this.add.rectangle(x - barWidth / 2, y - 4, barWidth * hpPct, barHeight, hpColor).setOrigin(0, 0.5).setDepth(23);
+    const hpFill = this.add.rectangle(x - barWidth / 2, y, barWidth * hpPct, barHeight, hpColor).setOrigin(0, 0.5).setDepth(23);
     unit.sprite.setData('hpFill', hpFill);
     unit.sprite.setData('hpBg', hpBg);
 
     // HP text
     const hpText = this.add.text(x, y + 10, `HP ${unit.hp}/${unit.maxHp}`, {
-      fontSize: '11px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      fontSize: '10px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setDepth(24);
     unit.sprite.setData('hpText', hpText);
   }
