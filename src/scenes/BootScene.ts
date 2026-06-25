@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { TH } from '../lang/th';
 import { QuestionBank } from '../systems/QuestionBank';
 import { generateClassTextures } from '../systems/ProceduralChars';
+import { generateBattleBg } from '../systems/BattleBg';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -57,6 +58,7 @@ export class BootScene extends Phaser.Scene {
     // Generate procedural character textures
     try {
       generateClassTextures(this);
+      generateBattleBg(this);
     } catch (e) {
       console.error('ProceduralChars failed:', e);
     }

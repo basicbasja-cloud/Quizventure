@@ -100,18 +100,8 @@ export class BattleScene extends Phaser.Scene {
     this.battleLog = [];
     this.logY = 440;
 
-    this.add.image(width / 2, height / 2, 'bg_battle')
-      .setDisplaySize(width, Math.max(height, width * 1025 / 1024))
-      .setOrigin(0.5);
-
-    // Ground shadow overlay for depth
-    const floor = this.add.graphics();
-    floor.fillStyle(0x000000, 0.2);
-    floor.fillRect(0, height * 0.7, width, height * 0.3);
-    // Ground horizon line
-    floor.lineStyle(2, 0xffffff, 0.08);
-    floor.lineBetween(0, height * 0.7, width, height * 0.7);
-    floor.setDepth(0);
+    // Procedural battlefield background with integrated ground
+    this.add.image(width / 2, height / 2, 'bg_battlefield').setDepth(0);
 
     // Enemy health check - check if there's enough questions
     if (this.isBoss) {
@@ -156,21 +146,20 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private createHeroUnits() {
-    // JRPG side-view: heroes on RIGHT, standing on ground
+    // FF-style: heroes on RIGHT, diagonal formation, smaller
     const total = this.party.length;
     this.heroes = this.party.map((char, i) => {
-      const staggerX = (total - 1 - i) * 10; // front chars slightly right
-      const x = 590 + staggerX;
-      const groundY = 425; // ground line for heroes
-      const spacing = 38;
-      const y = groundY - (total - 1 - i) * spacing; // bottom-to-top: MC front
+      const isEven = total === 4;
+      // Stagger diagonally: back chars higher and further left
+      const fromBack = total - 1 - i;
+      const x = 620 - fromBack * 45;
+      const y = 360 + fromBack * 32;
       const charKey = `char_${char.classType}`;
-      const sprite = this.add.image(x, y, charKey).setScale(2.5);
-      sprite.setData('origScale', 2.5);
+      const sprite = this.add.image(x, y, charKey).setScale(1.8);
+      sprite.setData('origScale', 1.8);
       sprite.setData('origTint', 0xffffff);
       sprite.setData('homeX', x);
       sprite.setData('homeY', y);
-      // Slight depth based on position (front chars slightly in front)
       sprite.setDepth(10 - i);
       startIdleAnimation(sprite);
       return {
@@ -194,8 +183,8 @@ export class BattleScene extends Phaser.Scene {
     // Hero name labels
     this.heroes.forEach(h => {
       if (h.sprite) {
-        this.add.text(h.sprite.x, h.sprite.y + 38, h.name, {
-          fontSize: '11px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        this.add.text(h.sprite.x, h.sprite.y + 30, h.name, {
+          fontSize: '10px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
           stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5).setDepth(25);
       }
@@ -209,11 +198,11 @@ export class BattleScene extends Phaser.Scene {
       const bossHp = 300 + this.chapter * 200;
       const bossAtk = 25 + this.chapter * 10;
       const bossDef = 15 + this.chapter * 5;
-      const sprite = this.add.image(200, 410, 'boss').setScale(3.2);
-      sprite.setData('origScale', 3.2);
+      const sprite = this.add.image(180, 380, 'boss').setScale(2.5);
+      sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
-      sprite.setData('homeX', 200);
-      sprite.setData('homeY', 410);
+      sprite.setData('homeX', 180);
+      sprite.setData('homeY', 380);
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
@@ -236,12 +225,12 @@ export class BattleScene extends Phaser.Scene {
       const enemyCount = 1 + Math.floor(Math.random() * 2);
       const enemyNames = ['สลิมป์', 'ก็อบลิน', 'ออร์ค', 'โครงกระดูก', 'ค้างคาวยักษ์'];
       for (let i = 0; i < enemyCount; i++) {
-        const x = 130 + i * 150;
-        const y = 425 - i * 30; // rear enemies slightly higher
+        const x = 150 + i * 140;
+        const y = 370 + i * 45; // rear enemies higher, front lower
         const name = enemyNames[Math.floor(Math.random() * enemyNames.length)];
         const hp = 40 + this.chapter * 15;
-        const sprite = this.add.image(x, y, 'enemy').setScale(2.5);
-        sprite.setData('origScale', 2.5);
+        const sprite = this.add.image(x, y, 'enemy').setScale(2);
+        sprite.setData('origScale', 2);
         sprite.setData('origTint', 0xffffff);
         sprite.setData('homeX', x);
         sprite.setData('homeY', y);
@@ -268,8 +257,8 @@ export class BattleScene extends Phaser.Scene {
 
     // Enemy name labels
     this.enemies.forEach(e => {
-      this.add.text(e.sprite.x, e.sprite.y - 55, e.name, {
-        fontSize: '13px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      this.add.text(e.sprite.x, e.sprite.y - 45, e.name, {
+        fontSize: '12px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
         stroke: '#000000', strokeThickness: 2,
       }).setOrigin(0.5).setDepth(25);
     });
