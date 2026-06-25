@@ -1,5 +1,5 @@
 // ============================================================
-// 🎮 Quest to Learn — Main Game Entry Point
+// 🎮 Quizventure — Main Game Entry Point
 // ============================================================
 
 import Phaser from 'phaser';

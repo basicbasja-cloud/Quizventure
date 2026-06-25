@@ -1,4 +1,4 @@
-# Quest to Learn — ผจญภัยเรียนรู้
+# Quizventure — ผจญภัยเรียนรู้
 
 An educational JRPG built with **Phaser 4**, **TypeScript**, and **Vite**. Teachers can create custom question banks, and students battle through turn-based combat by answering questions correctly!
 

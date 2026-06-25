@@ -5,7 +5,7 @@
 export const TH = {
   // ---- Game Title ----
   gameTitle: 'ผจญภัยเรียนรู้',
-  gameSubtitle: 'Quest to Learn',
+  gameSubtitle: 'Quizventure',
 
   // ---- Main Menu ----
   mainMenu: {

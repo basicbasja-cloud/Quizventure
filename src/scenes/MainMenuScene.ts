@@ -93,7 +93,7 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     // Credits
-    this.add.text(width / 2, height * 0.92, '© 2026 Quest to Learn', {
+    this.add.text(width / 2, height * 0.92, '© 2026 Quizventure', {
       fontSize: '14px',
       color: '#666666',
       fontFamily: 'Arial, sans-serif',
