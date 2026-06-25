@@ -66,7 +66,7 @@ export class BattleScene extends Phaser.Scene {
 
   private party: Character[] = [];
   private battleLog: Phaser.GameObjects.Text[] = [];
-  private logY = 440;
+  private logY = 370;
   private bossPhase = 0;
   private vfx!: VisualEffects;
   private bossPhases: BossPhase[] = [];
@@ -98,7 +98,7 @@ export class BattleScene extends Phaser.Scene {
 
     this.bossPhase = 0;
     this.battleLog = [];
-    this.logY = 440;
+    this.logY = 370;
 
     // Procedural battlefield background with integrated ground
     this.add.image(width / 2, height / 2, 'bg_battlefield').setDepth(0);
@@ -477,7 +477,7 @@ export class BattleScene extends Phaser.Scene {
     this.actionMenu.setVisible(true);
 
     const { width } = this.cameras.main;
-    const menuY = 470;
+    const menuY = 545;
     const isHealer = unit.character.classType === ClassType.Healer;
 
     // All classes: Attack (requires questions), Skills, Defend, Escape
@@ -986,9 +986,9 @@ export class BattleScene extends Phaser.Scene {
     const { width } = this.cameras.main;
     const logEntry = this.add.text(width / 2, this.logY, text, {
       fontSize: '11px', color: '#dddddd', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-      wordWrap: { width: 550 }, align: 'center',
+      wordWrap: { width: 450 }, align: 'center',
       stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(0.5).setAlpha(0.9).setDepth(28);
+    }).setOrigin(0.5).setAlpha(0.7).setDepth(28);
 
     this.battleLog.push(logEntry);
     this.logY += 20;
