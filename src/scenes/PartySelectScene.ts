@@ -10,6 +10,7 @@ import type { Character } from '../models/Character';
 import { SaveSystem } from '../systems/SaveSystem';
 import { SoundManager } from '../systems/SoundManager';
 import { createNewSave } from '../models/PlayerState';
+import { startIdleAnimation } from '../systems/CharacterAnimations';
 
 const ALL_CLASSES: ClassType[] = [
   ClassType.Warrior,
@@ -103,6 +104,8 @@ export class PartySelectScene extends Phaser.Scene {
     const charKey = `char_${classType}`;
     if (this.textures.exists(charKey)) {
       const sprite = this.add.image(0, -45, charKey).setScale(2);
+      sprite.setData('origScale', 2);
+      startIdleAnimation(sprite);
       container.add(sprite);
     }
 

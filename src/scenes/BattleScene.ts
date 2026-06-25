@@ -16,8 +16,19 @@ import { createNewSave } from '../models/PlayerState';
 import type { QuestionData } from '../models/Question';
 import { SoundManager } from '../systems/SoundManager';
 import { VisualEffects } from '../systems/VisualEffects';
+import {
+  startIdleAnimation,
+  playAttackAnimation,
+  playEnemyAttackAnimation,
+  playSkillAnimation,
+  playHealAnimation,
+  playDefendAnimation,
+  playHitAnimation,
+  playDeathAnimation,
+  playBossPhaseAnimation,
+} from '../systems/CharacterAnimations';
 
-interface BattleUnit {
+export interface BattleUnit {
   character: Character;
   isEnemy: boolean;
   isBoss: boolean;
@@ -141,6 +152,9 @@ export class BattleScene extends Phaser.Scene {
       const y = 280;
       const charKey = `char_${char.classType}`;
       const sprite = this.add.image(x, y, charKey).setScale(3);
+      sprite.setData('origScale', 3);
+      sprite.setData('origTint', 0xffffff);
+      startIdleAnimation(sprite);
       return {
         character: char,
         isEnemy: false,
@@ -168,6 +182,9 @@ export class BattleScene extends Phaser.Scene {
       const bossAtk = 25 + this.chapter * 10;
       const bossDef = 15 + this.chapter * 5;
       const sprite = this.add.image(width / 2, 150, 'boss').setScale(2.5);
+      sprite.setData('origScale', 2.5);
+      sprite.setData('origTint', 0xffffff);
+      startIdleAnimation(sprite);
       this.enemies = [{
         character: createCharacter('boss', 'บอส', ClassType.Warrior, 5 + this.chapter),
         isEnemy: true,
@@ -192,6 +209,9 @@ export class BattleScene extends Phaser.Scene {
         const name = enemyNames[Math.floor(Math.random() * enemyNames.length)];
         const hp = 40 + this.chapter * 15;
         const sprite = this.add.image(x, 160, 'enemy').setScale(2);
+        sprite.setData('origScale', 2);
+        sprite.setData('origTint', 0xffffff);
+        startIdleAnimation(sprite);
         this.enemies.push({
           character: createCharacter(`enemy_${i}`, name, ClassType.Warrior, 1 + this.chapter),
           isEnemy: true,
@@ -478,7 +498,8 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
 
-    // Show question panel
+    // Show question panel (with skill cast visual)
+    playSkillAnimation(unit.sprite);
     const answers = await this.showQuestionPanel(questions);
 
     // Process results
@@ -585,24 +606,28 @@ export class BattleScene extends Phaser.Scene {
   private applySkillEffect(unit: BattleUnit, skill: SkillDefinition, effectiveness: number) {
     const power = skill.basePower * effectiveness;
 
+    // Skill cast animation on caster
+    playSkillAnimation(unit.sprite);
+
     switch (skill.targetType) {
       case SkillTarget.SingleEnemy:
       case SkillTarget.AllEnemies: {
         const targets = this.enemies.filter(e => e.isAlive);
         targets.forEach(target => {
           const damage = Math.max(1, Math.floor((unit.atk * power) - target.def * 0.5));
-          target.hp = Math.max(0, target.hp - damage);
-          this.updateHpBar(target);
-          const dmgText = effectiveness < 1 ? `${Math.floor(damage)} (ลดลง)` : `${damage}`;
-          this.addLog(`⚡ ${unit.name} ใช้ทักษะ! สร้างดาเมจ ${dmgText} แก่ ${target.name}`);
 
-          // Flash enemy
-          this.tweens.add({
-            targets: target.sprite,
-            x: target.sprite.x - 5,
-            duration: 50,
-            yoyo: true,
-            repeat: 3,
+          // Hit animation on target
+          playHitAnimation(target.sprite, () => {
+            target.hp = Math.max(0, target.hp - damage);
+            this.updateHpBar(target);
+            const dmgText = effectiveness < 1 ? `${Math.floor(damage)} (ลดลง)` : `${damage}`;
+            this.addLog(`⚡ ${unit.name} ใช้ทักษะ! สร้างดาเมจ ${dmgText} แก่ ${target.name}`);
+
+            if (target.hp <= 0) {
+              playDeathAnimation(target.sprite);
+              target.isAlive = false;
+              this.addLog(`💀 ${target.name} ถูกกำจัด!`);
+            }
           });
         });
         break;
@@ -610,6 +635,7 @@ export class BattleScene extends Phaser.Scene {
       case SkillTarget.Self: {
         if (skill.id === 'shieldBlock' || skill.id === 'goldenArmor' || skill.id === 'kingsShield') {
           unit.defending = true;
+          playDefendAnimation(unit.sprite);
           this.addLog(`🛡️ ${unit.name} ใช้ ${(TH.skills as any)[skill.nameKey]} ป้องกันตัว`);
         } else if (skill.id === 'arcaneSurge' || skill.id === 'quickStep') {
           // Buff effects
@@ -623,6 +649,7 @@ export class BattleScene extends Phaser.Scene {
           const heal = Math.floor(target.maxHp * power);
           target.hp = Math.min(target.maxHp, target.hp + heal);
           this.updateHpBar(target);
+          playHealAnimation(target.sprite);
           this.addLog(`💚 ${unit.name} รักษา ${target.name} HP +${heal}`);
         }
         break;
@@ -633,6 +660,7 @@ export class BattleScene extends Phaser.Scene {
             const heal = Math.floor(target.maxHp * power);
             target.hp = Math.min(target.maxHp, target.hp + heal);
             this.updateHpBar(target);
+            playHealAnimation(target.sprite);
           }
         });
         this.addLog(`💚 ${unit.name} ใช้ ${(TH.skills as any)[skill.nameKey] || ''} รักษาทั้งทีม`);
@@ -645,25 +673,33 @@ export class BattleScene extends Phaser.Scene {
     const target = this.enemies.filter(e => e.isAlive).sort((a, b) => a.hp - b.hp)[0];
     if (!target) return;
 
-    const damage = Math.max(1, Math.floor(unit.atk * 1.0 - target.def * 0.3));
-    target.hp = Math.max(0, target.hp - damage);
-    this.updateHpBar(target);
-    this.addLog(`⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
+    // Animate attack
+    playAttackAnimation(unit.sprite, target.sprite, () => {
+      const damage = Math.max(1, Math.floor(unit.atk * 1.0 - target.def * 0.3));
 
-    // Flash target
-    this.tweens.add({
-      targets: target.sprite,
-      x: target.sprite.x - 5,
-      duration: 50,
-      yoyo: true,
-      repeat: 3,
+      // Hit animation on target
+      playHitAnimation(target.sprite, () => {
+        target.hp = Math.max(0, target.hp - damage);
+        this.updateHpBar(target);
+        this.addLog(`⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
+
+        // Screen shake
+        VisualEffects.screenShake(this, 0.005, 100);
+
+        if (target.hp <= 0) {
+          playDeathAnimation(target.sprite);
+          target.isAlive = false;
+          this.addLog(`💀 ${target.name} ถูกกำจัด!`);
+        }
+
+        this.endTurn(unit);
+      });
     });
-
-    this.endTurn(unit);
   }
 
   private doDefend(unit: BattleUnit) {
     unit.defending = true;
+    playDefendAnimation(unit.sprite);
     this.addLog(`🛡️ ${unit.name} ป้องกันตัว!`);
     this.endTurn(unit);
   }
@@ -673,6 +709,7 @@ export class BattleScene extends Phaser.Scene {
     const healAmt = Math.floor(unit.maxHp * 0.3);
     unit.hp = Math.min(unit.maxHp, unit.hp + healAmt);
     this.updateHpBar(unit);
+    playHealAnimation(unit.sprite);
     this.addLog(`💚 ${unit.name} รักษาตัวเอง HP +${healAmt}`);
     this.endTurn(unit);
   }
@@ -706,21 +743,24 @@ export class BattleScene extends Phaser.Scene {
     }
 
     const damage = Math.max(1, Math.floor((unit.atk * bossMult) - (target.def * 0.3 * (target.defending ? 2 : 1))));
-    target.hp = Math.max(0, target.hp - damage);
-    target.defending = false;
-    this.updateHpBar(target);
-    this.addLog(`👊 ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
 
-    // Flash target
-    this.tweens.add({
-      targets: target.sprite,
-      x: target.sprite.x - 5,
-      duration: 50,
-      yoyo: true,
-      repeat: 3,
+    // Animate enemy attack → hit on target
+    playEnemyAttackAnimation(unit.sprite, target.sprite, () => {
+      target.hp = Math.max(0, target.hp - damage);
+      target.defending = false;
+      this.updateHpBar(target);
+      this.addLog(`👊 ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
+      VisualEffects.screenShake(this, 0.005, 100);
+
+      playHitAnimation(target.sprite, () => {
+        if (target.hp <= 0) {
+          playDeathAnimation(target.sprite);
+          target.isAlive = false;
+          this.addLog(`💀 ${target.name} ล้มลง!`);
+        }
+        this.endTurn(unit);
+      });
     });
-
-    this.endTurn(unit);
   }
 
   private checkBossPhase(unit: BattleUnit) {
@@ -732,6 +772,9 @@ export class BattleScene extends Phaser.Scene {
         this.addLog(`⚠️ ${TH.battle.bossEnrage}! ${phase.name} — โจมตี x${phase.attackMultiplier}`);
         this.addLog(`📖 ตอบคำถามให้ถูกเพื่อทำดาเมจ!`);
 
+        // Boss phase animation
+        playBossPhaseAnimation(unit.sprite, phase.name);
+
         // Screen shake
         this.cameras.main.shake(300, 0.01);
         break;
@@ -742,9 +785,9 @@ export class BattleScene extends Phaser.Scene {
   private endTurn(unit: BattleUnit) {
     // Check if any hero died
     this.heroes = this.heroes.filter(h => {
-      if (h.hp <= 0) {
+      if (h.hp <= 0 && h.isAlive) {
         h.isAlive = false;
-        h.sprite.setAlpha(0.3);
+        playDeathAnimation(h.sprite);
         this.addLog(`💀 ${h.name} ล้มลง!`);
         return false;
       }
@@ -752,9 +795,9 @@ export class BattleScene extends Phaser.Scene {
     });
 
     this.enemies = this.enemies.filter(e => {
-      if (e.hp <= 0) {
+      if (e.hp <= 0 && e.isAlive) {
         e.isAlive = false;
-        e.sprite.setAlpha(0.3);
+        playDeathAnimation(e.sprite);
         this.addLog(`💀 ${e.name} ถูกกำจัด!`);
         return false;
       }
