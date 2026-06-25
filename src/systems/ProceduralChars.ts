@@ -6,8 +6,8 @@
 import Phaser from 'phaser';
 
 const W = 32; // design width
-const H = 48; // design height
-const SCALE = 2; // output: 64x96
+const H = 32; // design height (square — matches original LPC 64x64 output)
+const SCALE = 2; // output: 64x64
 
 interface ClassStyle {
   skin: string;
@@ -80,246 +80,216 @@ function lighten(c: string, f: number): string {
 function drawChar(ctx: CanvasRenderingContext2D, st: ClassStyle): void {
   // ── Legs ──
   ctx.fillStyle = darken(st.bodyColor, 0.15);
-  ctx.fillRect(11, 36, 4, 7);
-  ctx.fillRect(17, 36, 4, 7);
+  ctx.fillRect(11, 24, 4, 4);
+  ctx.fillRect(17, 24, 4, 4);
   // Boots
   ctx.fillStyle = '#3a2a1a';
-  ctx.fillRect(10, 42, 6, 5);
-  ctx.fillRect(16, 42, 6, 5);
-  ctx.fillStyle = '#4a3a2a';
-  ctx.fillRect(11, 42, 4, 1);
-  ctx.fillRect(17, 42, 4, 1);
+  ctx.fillRect(10, 28, 6, 4);
+  ctx.fillRect(16, 28, 6, 4);
 
   // ── Cape ──
   if (st.cape) {
     ctx.fillStyle = darken(st.cape, 0.3);
-    ctx.fillRect(5, 14, 22, 28);
+    ctx.fillRect(5, 10, 22, 20);
     ctx.fillStyle = st.cape;
-    ctx.fillRect(6, 13, 20, 27);
+    ctx.fillRect(6, 9, 20, 19);
     ctx.fillStyle = lighten(st.cape, 0.2);
-    ctx.fillRect(6, 13, 20, 2);
+    ctx.fillRect(6, 9, 20, 2);
   }
 
   // ── Body ──
-  const bodyY = 18;
+  const bodyY = 12;
   if (st.body === 'armor') {
-    // Pauldrons
     ctx.fillStyle = lighten(st.bodyColor, 0.15);
-    ctx.fillRect(6, bodyY, 5, 5);
-    ctx.fillRect(21, bodyY, 5, 5);
-    ctx.fillStyle = lighten(st.bodyColor, 0.35);
-    ctx.fillRect(6, bodyY, 5, 2);
-    ctx.fillRect(21, bodyY, 5, 2);
-    // Chest
+    ctx.fillRect(6, bodyY, 5, 4);
+    ctx.fillRect(21, bodyY, 5, 4);
     ctx.fillStyle = st.bodyColor;
-    ctx.fillRect(8, bodyY, 16, 18);
-    // Chest plate
+    ctx.fillRect(8, bodyY, 16, 13);
     ctx.fillStyle = lighten(st.bodyColor, 0.2);
-    ctx.fillRect(9, bodyY + 2, 14, 2);
-    // Emblem
+    ctx.fillRect(9, bodyY + 1, 14, 2);
     ctx.fillStyle = st.accent;
-    ctx.fillRect(14, bodyY + 5, 4, 4);
-    ctx.fillRect(15, bodyY + 4, 2, 6);
-    // Belt
+    ctx.fillRect(14, bodyY + 3, 4, 3);
+    ctx.fillRect(15, bodyY + 2, 2, 5);
     ctx.fillStyle = darken(st.bodyColor, 0.3);
-    ctx.fillRect(8, bodyY + 14, 16, 3);
+    ctx.fillRect(8, bodyY + 10, 16, 2);
     ctx.fillStyle = st.accent;
-    ctx.fillRect(14, bodyY + 14, 4, 3);
+    ctx.fillRect(14, bodyY + 10, 4, 2);
   } else if (st.body === 'robe') {
     ctx.fillStyle = st.bodyColor;
-    ctx.fillRect(7, bodyY, 18, 24);
-    // Robe trim
+    ctx.fillRect(7, bodyY, 18, 16);
     ctx.fillStyle = lighten(st.bodyColor, 0.15);
-    ctx.fillRect(14, bodyY + 3, 4, 21);
-    // Belt
+    ctx.fillRect(14, bodyY + 1, 4, 14);
     ctx.fillStyle = darken(st.bodyColor, 0.3);
-    ctx.fillRect(7, bodyY + 14, 18, 2);
+    ctx.fillRect(7, bodyY + 10, 18, 2);
     ctx.fillStyle = st.accent;
-    ctx.fillRect(14, bodyY + 13, 4, 4);
+    ctx.fillRect(14, bodyY + 9, 4, 3);
   } else if (st.body === 'tunic') {
     ctx.fillStyle = st.bodyColor;
-    ctx.fillRect(8, bodyY, 16, 18);
-    // Collar
+    ctx.fillRect(8, bodyY, 16, 12);
     ctx.fillStyle = lighten(st.bodyColor, 0.2);
-    ctx.fillRect(10, bodyY, 12, 3);
-    // Belt
+    ctx.fillRect(10, bodyY, 12, 2);
     ctx.fillStyle = darken(st.bodyColor, 0.3);
-    ctx.fillRect(8, bodyY + 14, 16, 2);
+    ctx.fillRect(8, bodyY + 9, 16, 2);
     ctx.fillStyle = st.accent;
-    ctx.fillRect(14, bodyY + 13, 4, 3);
+    ctx.fillRect(14, bodyY + 8, 4, 3);
   } else if (st.body === 'leather') {
     ctx.fillStyle = st.bodyColor;
-    ctx.fillRect(8, bodyY, 16, 18);
-    // Vest detail
+    ctx.fillRect(8, bodyY, 16, 12);
     ctx.fillStyle = st.bodyColor2;
     ctx.fillRect(8, bodyY, 16, 2);
-    ctx.fillRect(14, bodyY, 2, 18);
-    // Belt
+    ctx.fillRect(14, bodyY, 2, 12);
     ctx.fillStyle = darken(st.bodyColor, 0.3);
-    ctx.fillRect(8, bodyY + 14, 16, 2);
+    ctx.fillRect(8, bodyY + 9, 16, 2);
     ctx.fillStyle = st.accent;
-    ctx.fillRect(14, bodyY + 13, 4, 3);
+    ctx.fillRect(14, bodyY + 8, 4, 3);
   }
 
   // ── Arms ──
   ctx.fillStyle = st.skin;
-  ctx.fillRect(4, bodyY + 4, 3, 11);
-  ctx.fillRect(25, bodyY + 4, 3, 11);
-  // Hands
+  ctx.fillRect(4, bodyY + 2, 3, 8);
+  ctx.fillRect(25, bodyY + 2, 3, 8);
   ctx.fillStyle = darken(st.skin, 0.1);
-  ctx.fillRect(4, bodyY + 14, 3, 3);
-  ctx.fillRect(25, bodyY + 14, 3, 3);
+  ctx.fillRect(4, bodyY + 9, 3, 2);
+  ctx.fillRect(25, bodyY + 9, 3, 2);
 
   // ── Head (skin) ──
   ctx.fillStyle = st.skin;
-  ctx.fillRect(10, 4, 12, 12);
-  ctx.fillRect(9, 6, 14, 9);
+  ctx.fillRect(10, 2, 12, 9);
+  ctx.fillRect(9, 3, 14, 7);
 
   // ── Eyes ──
   ctx.fillStyle = '#222222';
-  ctx.fillRect(12, 8, 2, 3);
-  ctx.fillRect(18, 8, 2, 3);
+  ctx.fillRect(12, 5, 2, 2);
+  ctx.fillRect(18, 5, 2, 2);
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(12, 8, 1, 1);
-  ctx.fillRect(18, 8, 1, 1);
-  // Mouth
+  ctx.fillRect(12, 5, 1, 1);
+  ctx.fillRect(18, 5, 1, 1);
   ctx.fillStyle = darken(st.skin, 0.2);
-  ctx.fillRect(14, 13, 4, 1);
+  ctx.fillRect(14, 9, 4, 1);
 
   // ── Hair ──
   ctx.fillStyle = st.hair;
   if (st.hairStyle === 'short') {
-    ctx.fillRect(10, 2, 12, 4);
-    ctx.fillRect(9, 3, 2, 6);
-    ctx.fillRect(21, 3, 2, 6);
+    ctx.fillRect(10, 0, 12, 3);
+    ctx.fillRect(9, 1, 2, 4);
+    ctx.fillRect(21, 1, 2, 4);
   } else if (st.hairStyle === 'spiky') {
-    ctx.fillRect(10, 1, 12, 4);
-    ctx.fillRect(11, -1, 3, 3);
-    ctx.fillRect(17, -1, 3, 3);
-    ctx.fillRect(14, -2, 4, 3);
-    ctx.fillRect(9, 3, 2, 6);
-    ctx.fillRect(21, 3, 2, 6);
+    ctx.fillRect(10, 0, 12, 3);
+    ctx.fillRect(11, -2, 3, 3);
+    ctx.fillRect(17, -2, 3, 3);
+    ctx.fillRect(14, -3, 4, 3);
+    ctx.fillRect(9, 1, 2, 4);
+    ctx.fillRect(21, 1, 2, 4);
   } else if (st.hairStyle === 'long') {
-    ctx.fillRect(10, 2, 12, 4);
-    ctx.fillRect(8, 4, 3, 12);
-    ctx.fillRect(21, 4, 3, 12);
-    ctx.fillRect(10, 7, 12, 6);
+    ctx.fillRect(10, 0, 12, 3);
+    ctx.fillRect(8, 2, 3, 8);
+    ctx.fillRect(21, 2, 3, 8);
+    ctx.fillRect(10, 4, 12, 4);
   } else if (st.hairStyle === 'ponytail') {
-    ctx.fillRect(10, 2, 12, 4);
-    ctx.fillRect(9, 3, 2, 6);
-    ctx.fillRect(21, 3, 2, 6);
-    // Ponytail
-    ctx.fillRect(18, 7, 4, 4);
-    ctx.fillRect(19, 11, 3, 8);
+    ctx.fillRect(10, 0, 12, 3);
+    ctx.fillRect(9, 1, 2, 4);
+    ctx.fillRect(21, 1, 2, 4);
+    ctx.fillRect(18, 4, 4, 3);
+    ctx.fillRect(19, 7, 3, 5);
   }
 
   // ── Headgear ──
   if (st.hat === 'helmet') {
     ctx.fillStyle = st.bodyColor;
-    ctx.fillRect(8, 0, 16, 6);
+    ctx.fillRect(8, -1, 16, 5);
     ctx.fillStyle = lighten(st.bodyColor, 0.25);
-    ctx.fillRect(9, 0, 14, 2);
-    // Visor slit
+    ctx.fillRect(9, -1, 14, 1);
     ctx.fillStyle = '#222244';
-    ctx.fillRect(12, 3, 8, 2);
-    // Horns
+    ctx.fillRect(12, 2, 8, 1);
     ctx.fillStyle = st.bodyColor2;
-    ctx.fillRect(7, -2, 3, 4);
-    ctx.fillRect(22, -2, 3, 4);
+    ctx.fillRect(7, -3, 3, 4);
+    ctx.fillRect(22, -3, 3, 4);
   } else if (st.hat === 'hood') {
     ctx.fillStyle = st.bodyColor;
-    ctx.fillRect(7, 0, 18, 9);
-    ctx.fillRect(6, 3, 2, 6);
-    ctx.fillRect(24, 3, 2, 6);
+    ctx.fillRect(7, -1, 18, 7);
+    ctx.fillRect(6, 2, 2, 4);
+    ctx.fillRect(24, 2, 2, 4);
     ctx.fillStyle = darken(st.bodyColor, 0.15);
-    ctx.fillRect(10, 3, 12, 3);
+    ctx.fillRect(10, 2, 12, 2);
   } else if (st.hat === 'wizard') {
     ctx.fillStyle = st.bodyColor;
-    ctx.fillRect(8, -2, 16, 4);
-    ctx.fillRect(10, -6, 12, 5);
-    ctx.fillRect(12, -10, 8, 5);
-    ctx.fillRect(13, -12, 6, 3);
-    // Hat brim
+    ctx.fillRect(8, -3, 16, 3);
+    ctx.fillRect(10, -7, 12, 4);
+    ctx.fillRect(12, -11, 8, 4);
+    ctx.fillRect(13, -13, 6, 2);
     ctx.fillStyle = darken(st.bodyColor, 0.2);
-    ctx.fillRect(6, 2, 20, 2);
-    // Star
+    ctx.fillRect(6, 1, 20, 1);
     ctx.fillStyle = st.accent;
-    ctx.fillRect(15, -7, 2, 2);
+    ctx.fillRect(15, -8, 2, 2);
   } else if (st.hat === 'crown') {
     ctx.fillStyle = st.accent;
-    ctx.fillRect(10, -1, 12, 3);
-    ctx.fillRect(11, -3, 3, 2);
-    ctx.fillRect(15, -4, 3, 3);
-    ctx.fillRect(19, -3, 3, 2);
-    // Gems
+    ctx.fillRect(10, -2, 12, 2);
+    ctx.fillRect(11, -4, 3, 2);
+    ctx.fillRect(15, -5, 3, 3);
+    ctx.fillRect(19, -4, 3, 2);
     ctx.fillStyle = '#ff4444';
-    ctx.fillRect(15, -1, 3, 2);
+    ctx.fillRect(15, -2, 3, 1);
     ctx.fillStyle = '#44aaff';
-    ctx.fillRect(11, -1, 2, 2);
+    ctx.fillRect(11, -2, 2, 1);
   } else if (st.hat === 'circlet') {
     ctx.fillStyle = st.accent;
-    ctx.fillRect(11, 0, 10, 2);
+    ctx.fillRect(11, 0, 10, 1);
     ctx.fillStyle = '#44aaff';
-    ctx.fillRect(14, 0, 4, 2);
+    ctx.fillRect(14, 0, 4, 1);
   } else if (st.hat === 'bandana') {
     ctx.fillStyle = '#cc3333';
-    ctx.fillRect(9, 1, 14, 3);
-    // Tail
-    ctx.fillRect(19, 3, 3, 5);
+    ctx.fillRect(9, 0, 14, 2);
+    ctx.fillRect(19, 2, 3, 3);
   }
 
   // ── Weapon ──
   if (st.weapon === 'sword') {
     ctx.fillStyle = st.weaponColor;
-    ctx.fillRect(27, 20, 3, 15);
+    ctx.fillRect(27, 13, 3, 11);
     ctx.fillStyle = darken(st.weaponColor, 0.2);
-    ctx.fillRect(26, 33, 5, 3); // guard
+    ctx.fillRect(26, 23, 5, 2);
     ctx.fillStyle = '#6a4a2a';
-    ctx.fillRect(27, 36, 3, 4); // handle
+    ctx.fillRect(27, 25, 3, 3);
     ctx.fillStyle = lighten(st.weaponColor, 0.3);
-    ctx.fillRect(28, 20, 2, 8);
+    ctx.fillRect(28, 13, 2, 5);
   } else if (st.weapon === 'bow') {
     ctx.fillStyle = '#6a4a2a';
-    ctx.fillRect(27, 16, 2, 22);
-    ctx.fillRect(26, 16, 4, 1);
-    ctx.fillRect(26, 36, 4, 1);
+    ctx.fillRect(27, 10, 2, 16);
+    ctx.fillRect(26, 10, 4, 1);
+    ctx.fillRect(26, 24, 4, 1);
     ctx.fillStyle = '#8a6a4a';
-    ctx.fillRect(27, 16, 1, 22);
-    // String
+    ctx.fillRect(27, 10, 1, 16);
     ctx.fillStyle = '#cccccc';
-    ctx.fillRect(28, 18, 1, 18);
+    ctx.fillRect(28, 12, 1, 12);
   } else if (st.weapon === 'mace') {
     ctx.fillStyle = '#6a4a2a';
-    ctx.fillRect(27, 22, 3, 16);
+    ctx.fillRect(27, 15, 3, 11);
     ctx.fillStyle = st.weaponColor;
-    ctx.fillRect(24, 16, 9, 8);
+    ctx.fillRect(24, 10, 9, 6);
     ctx.fillStyle = lighten(st.weaponColor, 0.3);
-    ctx.fillRect(25, 17, 7, 2);
-    // Spikes
+    ctx.fillRect(25, 11, 7, 1);
     ctx.fillStyle = darken(st.weaponColor, 0.2);
-    ctx.fillRect(23, 18, 2, 3);
-    ctx.fillRect(32, 18, 2, 3);
+    ctx.fillRect(23, 12, 2, 2);
+    ctx.fillRect(32, 12, 2, 2);
   } else if (st.weapon === 'dagger') {
     ctx.fillStyle = st.weaponColor;
-    ctx.fillRect(4, 20, 2, 10);
+    ctx.fillRect(4, 13, 2, 7);
     ctx.fillStyle = darken(st.weaponColor, 0.2);
-    ctx.fillRect(3, 29, 4, 2);
+    ctx.fillRect(3, 19, 4, 2);
     ctx.fillStyle = '#4a3a2a';
-    ctx.fillRect(4, 31, 2, 4);
+    ctx.fillRect(4, 21, 2, 3);
     ctx.fillStyle = lighten(st.weaponColor, 0.3);
-    ctx.fillRect(4, 20, 1, 5);
+    ctx.fillRect(4, 13, 1, 3);
   } else if (st.weapon === 'staff') {
     ctx.fillStyle = '#6a4a2a';
-    ctx.fillRect(4, 12, 2, 28);
-    // Top ornament
+    ctx.fillRect(4, 8, 2, 18);
     ctx.fillStyle = st.accent;
-    ctx.fillRect(2, 8, 5, 6);
+    ctx.fillRect(2, 5, 5, 5);
     ctx.fillStyle = lighten(st.accent, 0.3);
-    ctx.fillRect(3, 9, 3, 2);
-    // Staff wrap
+    ctx.fillRect(3, 6, 3, 1);
     ctx.fillStyle = darken('#6a4a2a', 0.8);
-    ctx.fillRect(4, 24, 2, 2);
-    ctx.fillRect(4, 30, 2, 2);
+    ctx.fillRect(4, 16, 2, 1);
+    ctx.fillRect(4, 20, 2, 1);
   }
 }
 
@@ -405,6 +375,7 @@ export function generateClassTextures(scene: Phaser.Scene): void {
   scene.textures.addCanvas('enemy', enemyCanvas);
 
   // Generate boss (larger, more ornate)
+  const BOSS_W = 40, BOSS_H = 32;
   const bossSt: ClassStyle = {
     skin: '#6a4a2a', hair: '#1a0a00', hairStyle: 'spiky',
     hat: 'crown', body: 'armor',
@@ -413,67 +384,67 @@ export function generateClassTextures(scene: Phaser.Scene): void {
     accent: '#ffaa00',
   };
   const bossCanvas = document.createElement('canvas');
-  bossCanvas.width = 40 * SCALE;
-  bossCanvas.height = 48 * SCALE;
+  bossCanvas.width = BOSS_W * SCALE;
+  bossCanvas.height = BOSS_H * SCALE;
   const bossCtx = bossCanvas.getContext('2d')!;
   const tmp3 = document.createElement('canvas');
-  tmp3.width = 40; tmp3.height = 48;
+  tmp3.width = BOSS_W; tmp3.height = BOSS_H;
   const tmpCtx3 = tmp3.getContext('2d')!;
   // Boss - wider body
   tmpCtx3.fillStyle = darken(bossSt.bodyColor, 0.15);
-  tmpCtx3.fillRect(14, 36, 5, 7);
-  tmpCtx3.fillRect(21, 36, 5, 7);
+  tmpCtx3.fillRect(14, 24, 5, 4);
+  tmpCtx3.fillRect(21, 24, 5, 4);
   tmpCtx3.fillStyle = '#3a2a1a';
-  tmpCtx3.fillRect(13, 42, 7, 5);
-  tmpCtx3.fillRect(20, 42, 7, 5);
+  tmpCtx3.fillRect(13, 28, 7, 4);
+  tmpCtx3.fillRect(20, 28, 7, 4);
   // Cape
   tmpCtx3.fillStyle = darken(bossSt.cape!, 0.3);
-  tmpCtx3.fillRect(5, 14, 30, 30);
+  tmpCtx3.fillRect(5, 9, 30, 22);
   tmpCtx3.fillStyle = bossSt.cape!;
-  tmpCtx3.fillRect(6, 13, 28, 29);
+  tmpCtx3.fillRect(6, 8, 28, 21);
   // Body
   tmpCtx3.fillStyle = bossSt.bodyColor;
-  tmpCtx3.fillRect(9, 18, 22, 20);
+  tmpCtx3.fillRect(9, 12, 22, 14);
   tmpCtx3.fillStyle = lighten(bossSt.bodyColor, 0.2);
-  tmpCtx3.fillRect(10, 20, 20, 3);
+  tmpCtx3.fillRect(10, 13, 20, 2);
   tmpCtx3.fillStyle = bossSt.accent;
-  tmpCtx3.fillRect(18, 23, 4, 6);
+  tmpCtx3.fillRect(18, 16, 4, 4);
   // Arms
   tmpCtx3.fillStyle = bossSt.skin;
-  tmpCtx3.fillRect(5, 22, 4, 12);
-  tmpCtx3.fillRect(31, 22, 4, 12);
+  tmpCtx3.fillRect(5, 14, 4, 8);
+  tmpCtx3.fillRect(31, 14, 4, 8);
   // Head
   tmpCtx3.fillStyle = bossSt.skin;
-  tmpCtx3.fillRect(13, 4, 14, 13);
+  tmpCtx3.fillRect(13, 2, 14, 9);
   // Eyes (angry)
   tmpCtx3.fillStyle = '#ff2222';
-  tmpCtx3.fillRect(15, 8, 3, 2);
-  tmpCtx3.fillRect(22, 8, 3, 2);
+  tmpCtx3.fillRect(15, 5, 3, 2);
+  tmpCtx3.fillRect(22, 5, 3, 2);
   tmpCtx3.fillStyle = '#ff4444';
-  tmpCtx3.fillRect(15, 8, 2, 1);
-  tmpCtx3.fillRect(22, 8, 2, 1);
+  tmpCtx3.fillRect(15, 5, 2, 1);
+  tmpCtx3.fillRect(22, 5, 2, 1);
   // Mouth
   tmpCtx3.fillStyle = darken(bossSt.skin, 0.2);
-  tmpCtx3.fillRect(17, 13, 6, 2);
+  tmpCtx3.fillRect(17, 9, 6, 1);
   // Crown
   tmpCtx3.fillStyle = bossSt.accent;
-  tmpCtx3.fillRect(13, 0, 14, 4);
-  tmpCtx3.fillRect(14, -2, 4, 3);
-  tmpCtx3.fillRect(18, -3, 4, 4);
-  tmpCtx3.fillRect(22, -2, 4, 3);
+  tmpCtx3.fillRect(13, -1, 14, 3);
+  tmpCtx3.fillRect(14, -3, 4, 3);
+  tmpCtx3.fillRect(18, -4, 4, 4);
+  tmpCtx3.fillRect(22, -3, 4, 3);
   tmpCtx3.fillStyle = '#ff2222';
-  tmpCtx3.fillRect(18, 0, 4, 3);
+  tmpCtx3.fillRect(18, -1, 4, 2);
   // Sword
   tmpCtx3.fillStyle = bossSt.weaponColor;
-  tmpCtx3.fillRect(34, 18, 4, 20);
+  tmpCtx3.fillRect(34, 12, 4, 13);
   tmpCtx3.fillStyle = lighten(bossSt.weaponColor, 0.3);
-  tmpCtx3.fillRect(35, 18, 2, 10);
+  tmpCtx3.fillRect(35, 12, 2, 7);
   tmpCtx3.fillStyle = darken(bossSt.weaponColor, 0.2);
-  tmpCtx3.fillRect(33, 36, 6, 3);
+  tmpCtx3.fillRect(33, 24, 6, 2);
   tmpCtx3.fillStyle = '#6a4a2a';
-  tmpCtx3.fillRect(34, 39, 4, 5);
+  tmpCtx3.fillRect(34, 26, 4, 3);
 
   bossCtx.imageSmoothingEnabled = false;
-  bossCtx.drawImage(tmp3, 0, 0, 40 * SCALE, 48 * SCALE);
+  bossCtx.drawImage(tmp3, 0, 0, BOSS_W * SCALE, BOSS_H * SCALE);
   scene.textures.addCanvas('boss', bossCanvas);
 }
