@@ -66,7 +66,7 @@ export class BattleScene extends Phaser.Scene {
   private gold = 100;
   private party: Character[] = [];
   private battleLog: Phaser.GameObjects.Text[] = [];
-  private logY = 400;
+  private logY = 440;
   private bossPhase = 0;
   private vfx!: VisualEffects;
   private bossPhases: BossPhase[] = [];
@@ -98,7 +98,7 @@ export class BattleScene extends Phaser.Scene {
     this.gold = data.gold ?? 100;
     this.bossPhase = 0;
     this.battleLog = [];
-    this.logY = 400;
+    this.logY = 440;
 
     this.add.image(width / 2, height / 2, 'bg_battle')
       .setDisplaySize(width, Math.max(height, width * 1025 / 1024))
@@ -133,17 +133,17 @@ export class BattleScene extends Phaser.Scene {
     const title = this.isBoss ? TH.adventure.findBoss : TH.adventure.findEnemy;
     this.add.text(width / 2, 15, `⚔️ ${title}`, {
       fontSize: '20px', color: '#ff6600', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-    }).setOrigin(0.5).setAlpha(0.9);
+    }).setOrigin(0.5).setAlpha(0.9).setDepth(30);
 
     // Turn indicator text
     this.turnIndicator = this.add.text(width / 2, 45, '', {
       fontSize: '18px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(30);
 
     // Create menus (hidden initially)
-    this.actionMenu = this.add.container(0, 0).setVisible(false);
-    this.skillMenu = this.add.container(0, 0).setVisible(false);
-    this.questionOverlay = this.add.container(0, 0).setVisible(false);
+    this.actionMenu = this.add.container(0, 0).setVisible(false).setDepth(50);
+    this.skillMenu = this.add.container(0, 0).setVisible(false).setDepth(50);
+    this.questionOverlay = this.add.container(0, 0).setVisible(false).setDepth(100);
 
     // Calculate turn order ONCE — persists across rounds
     this.calculateTurnOrder();
@@ -197,7 +197,7 @@ export class BattleScene extends Phaser.Scene {
         this.add.text(h.sprite.x, h.sprite.y + 38, h.name, {
           fontSize: '11px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
           stroke: '#000000', strokeThickness: 2,
-        }).setOrigin(0.5).setDepth(20);
+        }).setOrigin(0.5).setDepth(25);
       }
     });
   }
@@ -271,7 +271,7 @@ export class BattleScene extends Phaser.Scene {
       this.add.text(e.sprite.x, e.sprite.y - 55, e.name, {
         fontSize: '13px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
         stroke: '#000000', strokeThickness: 2,
-      }).setOrigin(0.5).setDepth(20);
+      }).setOrigin(0.5).setDepth(25);
     });
   }
 
@@ -305,18 +305,18 @@ export class BattleScene extends Phaser.Scene {
     const barHeight = 8;
 
     // HP background
-    const hpBg = this.add.rectangle(x, y - 4, barWidth, barHeight, 0x333333).setOrigin(0.5);
+    const hpBg = this.add.rectangle(x, y - 4, barWidth, barHeight, 0x333333).setOrigin(0.5).setDepth(22);
     // HP fill
     const hpPct = unit.hp / unit.maxHp;
     const hpColor = hpPct > 0.5 ? 0x4ecca3 : hpPct > 0.25 ? 0xf39c12 : 0xe74c3c;
-    const hpFill = this.add.rectangle(x - barWidth / 2, y - 4, barWidth * hpPct, barHeight, hpColor).setOrigin(0, 0.5);
+    const hpFill = this.add.rectangle(x - barWidth / 2, y - 4, barWidth * hpPct, barHeight, hpColor).setOrigin(0, 0.5).setDepth(23);
     unit.sprite.setData('hpFill', hpFill);
     unit.sprite.setData('hpBg', hpBg);
 
     // HP text
     const hpText = this.add.text(x, y + 10, `HP ${unit.hp}/${unit.maxHp}`, {
       fontSize: '11px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(24);
     unit.sprite.setData('hpText', hpText);
   }
 
@@ -451,10 +451,10 @@ export class BattleScene extends Phaser.Scene {
 
     actions.forEach((btn, i) => {
       const x = 80 + i * 145;
-      const bg = this.add.image(x, menuY, 'btn_blue_sm').setInteractive({ useHandCursor: true });
+      const bg = this.add.image(x, menuY, 'btn_blue_sm').setInteractive({ useHandCursor: true }).setDepth(0);
       const txt = this.add.text(x, menuY, btn.text, {
         fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(0);
 
       bg.on('pointerover', () => bg.setScale(1.08));
       bg.on('pointerout', () => bg.setScale(1));
@@ -948,9 +948,10 @@ export class BattleScene extends Phaser.Scene {
   private addLog(text: string) {
     const { width } = this.cameras.main;
     const logEntry = this.add.text(width / 2, this.logY, text, {
-      fontSize: '12px', color: '#dddddd', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-      wordWrap: { width: 750 }, align: 'center',
-    }).setOrigin(0.5).setAlpha(0.9);
+      fontSize: '11px', color: '#dddddd', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      wordWrap: { width: 550 }, align: 'center',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0.5).setAlpha(0.9).setDepth(28);
 
     this.battleLog.push(logEntry);
     this.logY += 20;
