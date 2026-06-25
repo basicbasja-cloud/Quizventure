@@ -80,23 +80,29 @@ export class TeacherDashboard extends Phaser.Scene {
     // Form container (hidden by default)
     this.formContainer = this.add.container(0, 0).setVisible(false);
 
-    // Scroll support: mouse wheel + up/down keys
-    this.input.on('wheel', (_pointer: any, _gos: any, _dx: number, dy: number) => {
+    // Scroll support: mouse wheel + up/down keys (slide inner container, no rebuild)
+    this.input.on('wheel', (_pointer: any, _gos: any, _dx: number, _dy: number) => {
       const maxScroll = Math.max(0, this.questions.length * 36 + 170 - 540);
-      this.scrollY = Phaser.Math.Clamp(this.scrollY + dy * 0.5, 0, maxScroll);
-      this.refreshList();
+      this.scrollY = Phaser.Math.Clamp(this.scrollY + _dy * 0.5, 0, maxScroll);
+      this.applyScroll();
     });
     this.input.keyboard?.on('keydown-UP', () => {
       this.scrollY = Math.max(0, this.scrollY - 36);
-      this.refreshList();
+      this.applyScroll();
     });
     this.input.keyboard?.on('keydown-DOWN', () => {
       const maxScroll = Math.max(0, this.questions.length * 36 + 170 - 540);
       this.scrollY = Math.min(maxScroll, this.scrollY + 36);
-      this.refreshList();
+      this.applyScroll();
     });
 
     await this.refreshList();
+  }
+
+  private applyScroll() {
+    // Slide the inner items container without rebuilding anything
+    const inner = this.listContainer.getAt(0) as Phaser.GameObjects.Container | undefined;
+    if (inner) inner.y = -this.scrollY;
   }
 
   private async refreshList() {
@@ -109,24 +115,27 @@ export class TeacherDashboard extends Phaser.Scene {
       : allQuestions.filter(q => q.category === this.filterCategory);
 
     const startY = 140;
-    const maxVisibleY = 540; // clip below this
+    const maxVisibleY = 540;
 
-    // Create a mask for the list area (clips items below the screen)
+    // Inner container that will slide for scrolling
+    const inner = this.add.container(0, 0);
+    this.listContainer.add(inner);
+
+    // Create a mask on the list container (stays fixed, inner slides inside it)
     const maskShape = this.make.graphics({ x: 0, y: 0 });
     maskShape.fillStyle(0xffffff);
     maskShape.fillRect(0, startY - 5, 800, maxVisibleY - startY + 5);
     const mask = maskShape.createGeometryMask();
     this.listContainer.setMask(mask);
 
-    // Header background
+    // Header background (inside inner, scrolls with content)
     const headerBg = this.add.rectangle(400, startY + 11, 760, 28, 0x0a1a2e, 0.9);
-    this.listContainer.add(headerBg);
-    // Header
+    inner.add(headerBg);
     const headers = ['ลำดับ', 'หมวดหมู่', 'ความยาก', 'คำถาม', 'คงเหลือ', 'จัดการ'];
     const colWidths = [50, 80, 70, 300, 60, 100];
     let hx = 30;
     headers.forEach((h, i) => {
-      this.listContainer.add(
+      inner.add(
         this.add.text(hx, startY, h, {
           fontSize: '14px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
         })
@@ -141,10 +150,10 @@ export class TeacherDashboard extends Phaser.Scene {
     sep.moveTo(20, startY + 22);
     sep.lineTo(780, startY + 22);
     sep.strokePath();
-    this.listContainer.add(sep);
+    inner.add(sep);
 
     if (this.questions.length === 0) {
-      this.listContainer.add(
+      inner.add(
         this.add.text(400, startY + 50, TH.teacher.noQuestions, {
           fontSize: '16px', color: '#777777', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
         }).setOrigin(0.5)
@@ -153,10 +162,10 @@ export class TeacherDashboard extends Phaser.Scene {
     }
 
     this.questions.forEach((q, i) => {
-      const y = startY + 30 + i * 36 - this.scrollY;
+      const y = startY + 30 + i * 36;
       // Row background for contrast
       const rowBg = this.add.rectangle(400, y + 8, 760, 32, i % 2 === 0 ? 0x0a0a2e : 0x12123e, 0.85);
-      this.listContainer.add(rowBg);
+      inner.add(rowBg);
       const catName = (TH.classes as any)[q.category] || q.category;
       const diffLabel = TH.teacher.difficultyLevels[q.difficulty - 1] || '';
       const status = q.usesRemaining > 0
@@ -165,22 +174,22 @@ export class TeacherDashboard extends Phaser.Scene {
       const statusColor = q.usesRemaining > 0 ? '#4ecca3' : '#e74c3c';
 
       let qx = 30;
-      this.listContainer.add(this.add.text(qx, y, `${i + 1}`, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 50;
-      this.listContainer.add(this.add.text(qx, y, catName, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 80;
-      this.listContainer.add(this.add.text(qx, y, diffLabel, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 70;
+      inner.add(this.add.text(qx, y, `${i + 1}`, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 50;
+      inner.add(this.add.text(qx, y, catName, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 80;
+      inner.add(this.add.text(qx, y, diffLabel, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 70;
       const promptDisplay = q.prompt.length > 35 ? q.prompt.substring(0, 35) + '...' : q.prompt;
-      this.listContainer.add(this.add.text(qx, y, promptDisplay, { fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 300;
-      this.listContainer.add(this.add.text(qx, y, status, { fontSize: '13px', color: statusColor, fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 60;
+      inner.add(this.add.text(qx, y, promptDisplay, { fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 300;
+      inner.add(this.add.text(qx, y, status, { fontSize: '13px', color: statusColor, fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 60;
 
       // Edit button
       const editTxt = this.add.text(qx, y, '✏️', { fontSize: '16px' }).setInteractive({ useHandCursor: true });
       editTxt.on('pointerdown', () => this.editQuestion(q));
-      this.listContainer.add(editTxt); qx += 30;
+      inner.add(editTxt); qx += 30;
 
       // Delete button
       const delTxt = this.add.text(qx, y, '🗑️', { fontSize: '16px' }).setInteractive({ useHandCursor: true });
       delTxt.on('pointerdown', () => this.deleteQuestion(q));
-      this.listContainer.add(delTxt);
+      inner.add(delTxt);
     });
   }
 
