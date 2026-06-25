@@ -161,8 +161,8 @@ export class BattleScene extends Phaser.Scene {
       const x = 100 + fromBack * 55;
       const y = 420 - fromBack * 50;
       const charKey = `char_${char.classType}`;
-      const sprite = this.add.image(x, y, charKey).setScale(1.2);
-      sprite.setData('origScale', 1.2);
+      const sprite = this.add.image(x, y, charKey).setScale(2.0);
+      sprite.setData('origScale', 2.0);
       sprite.setData('origTint', 0xffffff);
       sprite.setData('homeX', x);
       sprite.setData('homeY', y);
@@ -190,9 +190,9 @@ export class BattleScene extends Phaser.Scene {
     this.heroes.forEach(h => {
       if (h.sprite) {
         const px = h.sprite.x + 50;
-        this.add.text(px, h.sprite.y - 10, h.name, {
-          fontSize: '11px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-          stroke: '#000000', strokeThickness: 2,
+        this.add.text(px, h.sprite.y - 20, h.name, {
+          fontSize: '22px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+          stroke: '#000000', strokeThickness: 3,
         }).setOrigin(0, 0.5).setDepth(25);
       }
     });
@@ -277,9 +277,9 @@ export class BattleScene extends Phaser.Scene {
 
     // Enemy name labels
     this.enemies.forEach(e => {
-      this.add.text(e.sprite.x, e.sprite.y - 45, e.name, {
-        fontSize: '12px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 2,
+      this.add.text(e.sprite.x, e.sprite.y - 60, e.name, {
+        fontSize: '24px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5).setDepth(25);
     });
   }

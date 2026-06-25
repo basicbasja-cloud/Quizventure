@@ -23,7 +23,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Title
     this.add.text(width / 2, height * 0.15, TH.gameTitle, {
-      fontSize: '52px',
+      fontSize: '96px',
       color: '#4ecca3',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       fontStyle: 'bold',
@@ -31,7 +31,7 @@ export class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     this.add.text(width / 2, height * 0.22, TH.gameSubtitle, {
-      fontSize: '22px',
+      fontSize: '42px',
       color: '#f39c12',
       fontFamily: 'Arial, sans-serif',
     }).setOrigin(0.5);
@@ -70,15 +70,16 @@ export class MainMenuScene extends Phaser.Scene {
     ];
 
     const startY = height * 0.33;
-    const spacing = 126;
+    const spacing = 180;
 
     buttons.forEach((btn, i) => {
       const y = startY + i * spacing;
       const bg = this.add.image(width / 2, y, 'btn_green_lg').setAlpha(btn.enabled ? 1 : 0.4);
       const txt = this.add.text(width / 2, y, btn.text, {
-        fontSize: '22px',
+        fontSize: '36px',
         color: '#ffffff',
         fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        fontStyle: 'bold',
       }).setOrigin(0.5);
 
       if (btn.enabled) {
@@ -94,7 +95,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Credits
     this.add.text(width / 2, height * 0.92, '© 2026 Quizventure', {
-      fontSize: '14px',
+      fontSize: '24px',
       color: '#666666',
       fontFamily: 'Arial, sans-serif',
     }).setOrigin(0.5);
