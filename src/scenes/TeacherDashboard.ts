@@ -353,28 +353,19 @@ export class TeacherDashboard extends Phaser.Scene {
   }
 
   private downloadTemplate() {
-    const template = [
-      {
-        prompt: 'แม่น้ำที่ยาวที่สุดในโลกคืออะไร?',
-        choices: ['แม่น้ำไนล์', 'แม่น้ำแอมะซอน', 'แม่น้ำมิสซิสซิปปี', 'แม่น้ำแยงซี'],
-        correctIndex: 0,
-        category: 'warrior',
-        difficulty: 1,
-      },
-      {
-        prompt: 'ดาวเคราะห์ดวงใดใหญ่ที่สุดในระบบสุริยะ?',
-        choices: ['ดาวอังคาร', 'ดาวพฤหัสบดี', 'ดาวเสาร์', 'ดาวเนปจูน'],
-        correctIndex: 1,
-        category: 'archer',
-        difficulty: 1,
-      },
-    ];
-    const json = JSON.stringify(template, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
+    // CSV header + sample rows (easy to open in Excel/Google Sheets)
+    const csv = [
+      'คำถาม,ตัวเลือก1,ตัวเลือก2,ตัวเลือก3,ตัวเลือก4,คำตอบที่ถูก,หมวดหมู่,ความยาก',
+      '"แม่น้ำที่ยาวที่สุดในโลกคืออะไร?","แม่น้ำไนล์","แม่น้ำแอมะซอน","แม่น้ำมิสซิสซิปปี","แม่น้ำแยงซี",0,warrior,1',
+      '"ดาวเคราะห์ดวงใดใหญ่ที่สุดในระบบสุริยะ?","ดาวอังคาร","ดาวพฤหัสบดี","ดาวเสาร์","ดาวเนปจูน",1,archer,1',
+      '"ข้อความคำถามของคุณ","ตัวเลือกที่ 1","ตัวเลือกที่ 2","ตัวเลือกที่ 3","ตัวเลือกที่ 4",0,warrior,1',
+    ].join('\n');
+    const bom = '\uFEFF'; // BOM for Excel to recognize Thai UTF-8
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'question_template.json';
+    a.download = 'question_template.csv';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -385,7 +376,7 @@ export class TeacherDashboard extends Phaser.Scene {
   }
 
   private showImportDialog() {
-    // Create a DOM textarea for pasting JSON
+    // Create a DOM textarea for pasting JSON or CSV
     const existing = document.getElementById('teacher-import-overlay');
     if (existing) existing.remove();
 
@@ -398,7 +389,7 @@ export class TeacherDashboard extends Phaser.Scene {
     `;
 
     const textarea = document.createElement('textarea');
-    textarea.placeholder = 'วาง JSON คำถามที่นี่...';
+    textarea.placeholder = 'วาง JSON หรือ CSV ที่นี่...\n\nCSH: คําถาม,ตัวเลือก1,ตัวเลือก2,ตัวเลือก3,ตัวเลือก4,คําตอบที่ถูก,หมวดหมู่,ความยาก\nJSON: [{...}]';
     textarea.style.cssText = `
       width: 500px; height: 300px; padding: 12px; font-size: 14px;
       font-family: monospace; background: #0a0a2e; color: #ffffff;
@@ -425,14 +416,41 @@ export class TeacherDashboard extends Phaser.Scene {
 
     importBtn.addEventListener('click', async () => {
       try {
-        const questions = JSON.parse(textarea.value) as QuestionData[];
+        const raw = textarea.value.trim();
+        let questions: QuestionData[];
+        // Auto-detect CSV (starts with คำถาม or contains comma-separated values)
+        if (raw.startsWith('คำถาม') || (raw.includes(',') && !raw.startsWith('['))) {
+          const lines = raw.split('\n').filter(l => l.trim() && !l.startsWith('คำถาม'));
+          questions = lines.map(line => {
+            // Parse CSV (handle quoted values)
+            const vals: string[] = [];
+            let current = '', inQ = false;
+            for (const ch of line) {
+              if (ch === '"') { inQ = !inQ; continue; }
+              if (ch === ',' && !inQ) { vals.push(current.trim()); current = ''; continue; }
+              current += ch;
+            }
+            vals.push(current.trim());
+            return {
+              prompt: vals[0] || '',
+              choices: [vals[1] || '', vals[2] || '', vals[3] || '', vals[4] || ''],
+              correctIndex: parseInt(vals[5]) || 0,
+              category: vals[6] || 'warrior',
+              difficulty: parseInt(vals[7]) || 1,
+              usesRemaining: 3,
+            } as QuestionData;
+          });
+        } else {
+          // JSON format
+          questions = JSON.parse(raw) as QuestionData[];
+        }
         if (questions.length > 0) {
           await QuestionBank.bulkAdd(questions);
           overlay.remove();
           this.refreshList();
         }
       } catch {
-        alert('JSON ไม่ถูกต้อง');
+        alert('JSON หรือ CSV ไม่ถูกต้อง กรุณาตรวจสอบรูปแบบ');
       }
     });
 
