@@ -489,7 +489,7 @@ export class BattleScene extends Phaser.Scene {
     actions.push({ text: TH.battle.specialSkill, action: () => this.showSkillMenu(unit) });
     if (!isHealer) actions.push({ text: TH.battle.heal, action: () => this.tryHeal(unit) });
     actions.push({ text: TH.battle.defend, action: () => this.doDefend(unit) });
-    actions.push({ text: TH.battle.escape, action: () => this.tryEscape(unit) });
+    // Escape removed — use home button in AdventureScene instead
 
     actions.forEach((btn, i) => {
       const x = 80 + i * 145;

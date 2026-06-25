@@ -184,6 +184,16 @@ export class AdventureScene extends Phaser.Scene {
     }
     this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.3).setDepth(1);
 
+    // Home button (top-right corner)
+    const homeBtn = this.add.text(width - 10, 8, '🏠', { fontSize: '22px', stroke: '#000000', strokeThickness: 3 })
+      .setOrigin(1, 0).setInteractive({ useHandCursor: true }).setDepth(50);
+    homeBtn.on('pointerover', () => homeBtn.setScale(1.2));
+    homeBtn.on('pointerout', () => homeBtn.setScale(1));
+    homeBtn.on('pointerdown', () => {
+      SoundManager.confirm();
+      this.scene.start('MainMenuScene');
+    });
+
     this.drawMap();
     this.partyIcon = this.add.text(0, 0, '👥', { fontSize: '18px' }).setOrigin(0.5).setDepth(10);
     this.positionPartyIcon();
