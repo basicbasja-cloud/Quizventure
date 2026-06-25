@@ -268,6 +268,66 @@ export const TH = {
     panaceaDesc: 'รักษาทุกอย่าง HP เต็ม + ล้างพิษ ให้เพื่อน 1 คน',
     sanctuary: 'สถานศักดิ์สิทธิ์',
     sanctuaryDesc: 'สร้างพื้นที่ศักดิ์สิทธิ์ รักษาเพื่อนทั้งหมด 30% และทำลายศัตรู 20%',
+
+    // Warrior Lv7-15
+    warCry: 'เสียงคำราม',
+    warCryDesc: 'คำรามปลุกพลัง เพิ่มพลังโจมตีตัวเอง 50%',
+    bladeStorm: 'พายุหมุน',
+    bladeStormDesc: 'หมุนดาบพายุใส่ศัตรูทั้งหมด 100%',
+    knightsCharge: ' charged อัศวิน',
+    knightsChargeDesc: 'charged ใส่ศัตรูด้วยพลังมหาศาล 250%',
+    battleRoar: 'เสียงก้องสนามรบ',
+    battleRoarDesc: 'ปลุกพลังเพื่อนร่วมทีมทั้งหมด โจมตี +50%',
+
+    // Archer Lv7-15
+    trap: 'กับดัก',
+    trapDesc: 'วางกับดักลดความเร็วศัตรู 40%',
+    tripleShot: 'ยิงสามดอก',
+    tripleShotDesc: 'ยิงธนูสามดอกพร้อมกัน 180%',
+    windArrow: 'ลูกศรลม',
+    windArrowDesc: 'ยิงศรลมทะลวงเกราะ 300%',
+    eagleEye: 'สายตานกอินทรี',
+    eagleEyeDesc: 'ยิงถล่มศัตรูทั้งหมด 120% มั่นใจไม่พลาด',
+
+    // Paladin Lv7-15
+    holyLight: 'แสงศักดิ์สิทธิ์',
+    holyLightDesc: 'ใช้แสงศักดิ์สิทธิ์รักษาตัวเอง 30%',
+    smite: 'ลงทัณฑ์',
+    smiteDesc: 'ลงทัณฑ์ศัตรูด้วยพลังศักดิ์สิทธิ์ 180%',
+    divineWrath: 'พระพิโรธ',
+    divineWrathDesc: 'พระพิโรธถล่มศัตรูทั้งหมด 120%',
+    holyShield: 'โล่ศักดิ์สิทธิ์',
+    holyShieldDesc: 'สร้างโล่ศักดิ์สิทธิ์ป้องกันเพื่อนทั้งหมด 50%',
+
+    // Rogue Lv7-15
+    backStab: 'แทงข้างหลัง',
+    backStabDesc: 'แทงข้างหลังศัตรู สร้างความเสียหาย 200%',
+    evade: 'หลบหลีก',
+    evadeDesc: 'เพิ่มความเร็วตัวเอง 50%',
+    assassinate: 'ลอบสังหาร',
+    assassinateDesc: 'ลอบสังหารศัตรู สร้างความเสียหายรุนแรง 400%',
+    bladeFlurry: 'พายุมีด',
+    bladeFlurryDesc: 'ฟันมีดถล่มศัตรูทั้งหมด 100%',
+
+    // Mage Lv7-15
+    fireWall: 'กำแพงไฟ',
+    fireWallDesc: 'สร้างกำแพงไฟเผาศัตรูทั้งหมด 50%',
+    manaShield: 'โล่เวทมนตร์',
+    manaShieldDesc: 'สร้างโล่เวทลดความเสียหาย 50%',
+    voidBolt: 'ลูกศรเวท',
+    voidBoltDesc: 'ยิงพลังเวทสีดำสนิท 250%',
+    elementalWrath: 'เกรี้ยวกราดแห่งธาตุ',
+    elementalWrathDesc: 'เรียกพลังธาตุถล่มศัตรูทั้งหมด 200%',
+
+    // Healer Lv7-15
+    prayer: 'ภาวนา',
+    prayerDesc: 'ภาวนารักษาเพื่อนร่วมทีมทั้งหมด 20%',
+    blessing: 'อวยพร',
+    blessingDesc: 'อวยพรเพิ่มพลังป้องกันเพื่อนทั้งหมด 30%',
+    holyPrayer: 'บทสวดศักดิ์สิทธิ์',
+    holyPrayerDesc: 'สวดรักษาเพื่อนทั้งหมด 100%',
+    divineIntervention: 'เทพสถิต',
+    divineInterventionDesc: 'เทพมาสถิต รักษาเพื่อนทั้งหมด 150%',
   },
 
   // ---- Stats ----

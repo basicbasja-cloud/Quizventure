@@ -7,7 +7,7 @@ import { TH } from '../lang/th';
 import type { Character } from '../models/Character';
 import { addXp, createCharacter, getCharacterSkills } from '../models/Character';
 import { ClassType, CLASS_DEFINITIONS, ClassStage } from '../models/CharacterClass';
-import { SkillTarget } from '../models/Skill';
+import { SkillTarget, QuestionDifficulty } from '../models/Skill';
 import type { SkillDefinition } from '../models/Skill';
 import { BattleQuestionSystem } from '../systems/BattleQuestionSystem';
 import { QuestionBank } from '../systems/QuestionBank';
@@ -390,13 +390,16 @@ export class BattleScene extends Phaser.Scene {
 
     const { width } = this.cameras.main;
     const menuY = 470;
-    const actions: { text: string; action: () => void }[] = [
-      { text: TH.battle.attack, action: () => this.doAttack(unit) },
-      { text: TH.battle.specialSkill, action: () => this.showSkillMenu(unit) },
-      { text: TH.battle.heal, action: () => this.tryHeal(unit) },
-      { text: TH.battle.defend, action: () => this.doDefend(unit) },
-      { text: TH.battle.escape, action: () => this.tryEscape(unit) },
-    ];
+    const isHealer = unit.character.classType === ClassType.Healer;
+
+    // All classes: Attack (requires questions), Skills, Defend, Escape
+    // Healer class has heal built into their skill list instead
+    const actions: { text: string; action: () => void }[] = [];
+    actions.push({ text: TH.battle.attack, action: () => this.doAttack(unit) });
+    actions.push({ text: TH.battle.specialSkill, action: () => this.showSkillMenu(unit) });
+    if (!isHealer) actions.push({ text: TH.battle.heal, action: () => this.tryHeal(unit) });
+    actions.push({ text: TH.battle.defend, action: () => this.doDefend(unit) });
+    actions.push({ text: TH.battle.escape, action: () => this.tryEscape(unit) });
 
     actions.forEach((btn, i) => {
       const x = 80 + i * 145;
@@ -669,22 +672,47 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  private doAttack(unit: BattleUnit) {
+  private async doAttack(unit: BattleUnit) {
     const target = this.enemies.filter(e => e.isAlive).sort((a, b) => a.hp - b.hp)[0];
     if (!target) return;
 
+    // Basic attack: draw 1 easy question matching this class
+    const attackQuestions = await QuestionBank.getAvailableQuestions(
+      unit.character.classType,
+      QuestionDifficulty.Easy,
+      '',
+      1,
+    );
+    if (attackQuestions.length < 1) {
+      this.addLog(`❌ ${TH.battle.noQuestionsLeft}`);
+      this.endTurn(unit);
+      return;
+    }
+
+    const answers = await this.showQuestionPanel(attackQuestions);
+    const correct = answers[0];
+
     // Animate attack
     playAttackAnimation(unit.sprite, target.sprite, () => {
-      const damage = Math.max(1, Math.floor(unit.atk * 1.0 - target.def * 0.3));
+      const dmgMult = correct ? 1.0 : 0.4; // 60% penalty on wrong answer
+      const damage = Math.max(1, Math.floor(unit.atk * dmgMult - target.def * 0.3));
+
+      if (correct) {
+        SoundManager.correct();
+      } else {
+        SoundManager.wrong();
+      }
 
       // Hit animation on target
       playHitAnimation(target.sprite, () => {
         target.hp = Math.max(0, target.hp - damage);
         this.updateHpBar(target);
-        this.addLog(`⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
+        const log = correct
+          ? `⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`
+          : `⚔️ ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ (ตอบผิด - ลดลง)`;
+        this.addLog(log);
 
-        // Screen shake
-        VisualEffects.screenShake(this, 0.005, 100);
+        this.cameras.main.shake(100, 0.005);
 
         if (target.hp <= 0) {
           playDeathAnimation(target.sprite);
@@ -705,12 +733,15 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private async tryHeal(unit: BattleUnit) {
-    // Healing items or skill - simplified: restore 30% HP
-    const healAmt = Math.floor(unit.maxHp * 0.3);
-    unit.hp = Math.min(unit.maxHp, unit.hp + healAmt);
-    this.updateHpBar(unit);
-    playHealAnimation(unit.sprite);
-    this.addLog(`💚 ${unit.name} รักษาตัวเอง HP +${healAmt}`);
+    // Auto-target the ally with lowest HP percentage
+    const targets = this.heroes.filter(h => h.isAlive && h !== unit).sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+    const target = targets[0] || unit;
+    const healAmt = Math.floor(target.maxHp * 0.3);
+    target.hp = Math.min(target.maxHp, target.hp + healAmt);
+    this.updateHpBar(target);
+    playHealAnimation(target.sprite);
+    const targetName = target === unit ? 'ตัวเอง' : target.name;
+    this.addLog(`💚 ${unit.name} รักษา ${targetName} HP +${healAmt}`);
     this.endTurn(unit);
   }
 
@@ -750,7 +781,7 @@ export class BattleScene extends Phaser.Scene {
       target.defending = false;
       this.updateHpBar(target);
       this.addLog(`👊 ${unit.name} โจมตี ${target.name}! ${damage} ดาเมจ`);
-      VisualEffects.screenShake(this, 0.005, 100);
+      this.cameras.main.shake(100, 0.005);
 
       playHitAnimation(target.sprite, () => {
         if (target.hp <= 0) {

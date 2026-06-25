@@ -235,6 +235,164 @@ export const SKILLS: SkillDefinition[] = [
     mpCost: 30, basePower: 0.3, targetType: SkillTarget.AllAllies,
     associatedStat: 'wis', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Easy,
   },
+
+  // ===== Level 7-15 Skills =====
+
+  // ---- Warrior ----
+  {
+    id: 'warCry', nameKey: 'warCry', descKey: 'warCryDesc',
+    requiredClass: ClassType.Warrior, isEvolvedSkill: false, levelRequired: 7,
+    mpCost: 12, basePower: 0.5, targetType: SkillTarget.Self,
+    associatedStat: 'atk', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'bladeStorm', nameKey: 'bladeStorm', descKey: 'bladeStormDesc',
+    requiredClass: ClassType.Warrior, isEvolvedSkill: false, levelRequired: 9,
+    mpCost: 18, basePower: 1.0, targetType: SkillTarget.AllEnemies,
+    associatedStat: 'atk', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'knightsCharge', nameKey: 'knightsCharge', descKey: 'knightsChargeDesc',
+    requiredClass: ClassType.Warrior, isEvolvedSkill: true, levelRequired: 12,
+    mpCost: 22, basePower: 2.5, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'atk', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Hard,
+  },
+  {
+    id: 'battleRoar', nameKey: 'battleRoar', descKey: 'battleRoarDesc',
+    requiredClass: ClassType.Warrior, isEvolvedSkill: true, levelRequired: 15,
+    mpCost: 28, basePower: 1.5, targetType: SkillTarget.AllAllies,
+    associatedStat: 'atk', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Hard,
+  },
+
+  // ---- Archer ----
+  {
+    id: 'trap', nameKey: 'trap', descKey: 'trapDesc',
+    requiredClass: ClassType.Archer, isEvolvedSkill: false, levelRequired: 7,
+    mpCost: 10, basePower: 0.4, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'spd', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'tripleShot', nameKey: 'tripleShot', descKey: 'tripleShotDesc',
+    requiredClass: ClassType.Archer, isEvolvedSkill: false, levelRequired: 9,
+    mpCost: 16, basePower: 0.6, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'atk', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'windArrow', nameKey: 'windArrow', descKey: 'windArrowDesc',
+    requiredClass: ClassType.Archer, isEvolvedSkill: true, levelRequired: 12,
+    mpCost: 20, basePower: 3.0, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'atk', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Hard,
+  },
+  {
+    id: 'eagleEye', nameKey: 'eagleEye', descKey: 'eagleEyeDesc',
+    requiredClass: ClassType.Archer, isEvolvedSkill: true, levelRequired: 15,
+    mpCost: 24, basePower: 1.2, targetType: SkillTarget.AllEnemies,
+    associatedStat: 'atk', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Hard,
+  },
+
+  // ---- Paladin ----
+  {
+    id: 'holyLight', nameKey: 'holyLight', descKey: 'holyLightDesc',
+    requiredClass: ClassType.Paladin, isEvolvedSkill: false, levelRequired: 7,
+    mpCost: 14, basePower: 0.3, targetType: SkillTarget.Self,
+    associatedStat: 'wis', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'smite', nameKey: 'smite', descKey: 'smiteDesc',
+    requiredClass: ClassType.Paladin, isEvolvedSkill: false, levelRequired: 9,
+    mpCost: 16, basePower: 1.8, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'wis', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'divineWrath', nameKey: 'divineWrath', descKey: 'divineWrathDesc',
+    requiredClass: ClassType.Paladin, isEvolvedSkill: true, levelRequired: 12,
+    mpCost: 24, basePower: 1.2, targetType: SkillTarget.AllEnemies,
+    associatedStat: 'wis', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Hard,
+  },
+  {
+    id: 'holyShield', nameKey: 'holyShield', descKey: 'holyShieldDesc',
+    requiredClass: ClassType.Paladin, isEvolvedSkill: true, levelRequired: 15,
+    mpCost: 26, basePower: 0.5, targetType: SkillTarget.AllAllies,
+    associatedStat: 'def', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Hard,
+  },
+
+  // ---- Rogue ----
+  {
+    id: 'backStab', nameKey: 'backStab', descKey: 'backStabDesc',
+    requiredClass: ClassType.Rogue, isEvolvedSkill: false, levelRequired: 7,
+    mpCost: 12, basePower: 2.0, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'atk', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'evade', nameKey: 'evade', descKey: 'evadeDesc',
+    requiredClass: ClassType.Rogue, isEvolvedSkill: false, levelRequired: 9,
+    mpCost: 8, basePower: 0.5, targetType: SkillTarget.Self,
+    associatedStat: 'spd', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'assassinate', nameKey: 'assassinate', descKey: 'assassinateDesc',
+    requiredClass: ClassType.Rogue, isEvolvedSkill: true, levelRequired: 12,
+    mpCost: 25, basePower: 4.0, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'atk', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Hard,
+  },
+  {
+    id: 'bladeFlurry', nameKey: 'bladeFlurry', descKey: 'bladeFlurryDesc',
+    requiredClass: ClassType.Rogue, isEvolvedSkill: true, levelRequired: 15,
+    mpCost: 22, basePower: 1.0, targetType: SkillTarget.AllEnemies,
+    associatedStat: 'atk', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Medium,
+  },
+
+  // ---- Mage ----
+  {
+    id: 'fireWall', nameKey: 'fireWall', descKey: 'fireWallDesc',
+    requiredClass: ClassType.Mage, isEvolvedSkill: false, levelRequired: 7,
+    mpCost: 14, basePower: 0.5, targetType: SkillTarget.AllEnemies,
+    associatedStat: 'int', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'manaShield', nameKey: 'manaShield', descKey: 'manaShieldDesc',
+    requiredClass: ClassType.Mage, isEvolvedSkill: false, levelRequired: 9,
+    mpCost: 12, basePower: 0.5, targetType: SkillTarget.Self,
+    associatedStat: 'int', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'voidBolt', nameKey: 'voidBolt', descKey: 'voidBoltDesc',
+    requiredClass: ClassType.Mage, isEvolvedSkill: true, levelRequired: 12,
+    mpCost: 24, basePower: 2.5, targetType: SkillTarget.SingleEnemy,
+    associatedStat: 'int', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Hard,
+  },
+  {
+    id: 'elementalWrath', nameKey: 'elementalWrath', descKey: 'elementalWrathDesc',
+    requiredClass: ClassType.Mage, isEvolvedSkill: true, levelRequired: 15,
+    mpCost: 35, basePower: 2.0, targetType: SkillTarget.AllEnemies,
+    associatedStat: 'int', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Hard,
+  },
+
+  // ---- Healer ----
+  {
+    id: 'prayer', nameKey: 'prayer', descKey: 'prayerDesc',
+    requiredClass: ClassType.Healer, isEvolvedSkill: false, levelRequired: 7,
+    mpCost: 18, basePower: 0.2, targetType: SkillTarget.AllAllies,
+    associatedStat: 'wis', requiredQuestionCount: 1, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'blessing', nameKey: 'blessing', descKey: 'blessingDesc',
+    requiredClass: ClassType.Healer, isEvolvedSkill: false, levelRequired: 9,
+    mpCost: 16, basePower: 0.3, targetType: SkillTarget.AllAllies,
+    associatedStat: 'wis', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Medium,
+  },
+  {
+    id: 'holyPrayer', nameKey: 'holyPrayer', descKey: 'holyPrayerDesc',
+    requiredClass: ClassType.Healer, isEvolvedSkill: true, levelRequired: 12,
+    mpCost: 28, basePower: 1.0, targetType: SkillTarget.AllAllies,
+    associatedStat: 'wis', requiredQuestionCount: 2, questionDifficulty: QuestionDifficulty.Hard,
+  },
+  {
+    id: 'divineIntervention', nameKey: 'divineIntervention', descKey: 'divineInterventionDesc',
+    requiredClass: ClassType.Healer, isEvolvedSkill: true, levelRequired: 15,
+    mpCost: 40, basePower: 1.5, targetType: SkillTarget.AllAllies,
+    associatedStat: 'wis', requiredQuestionCount: 3, questionDifficulty: QuestionDifficulty.Hard,
+  },
 ];
 
 /** Get skills available for a character at a given level */
