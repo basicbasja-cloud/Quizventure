@@ -104,16 +104,13 @@ export class BattleScene extends Phaser.Scene {
       .setDisplaySize(width, Math.max(height, width * 1025 / 1024))
       .setOrigin(0.5);
 
-    // JRPG floor plane for depth perspective
+    // Ground shadow overlay for depth
     const floor = this.add.graphics();
-    floor.fillStyle(0x000000, 0.25);
-    floor.fillRect(0, height * 0.45, width, height * 0.55);
-    // Floor gradient lines for depth
-    for (let i = 0; i < 6; i++) {
-      const y = height * 0.45 + i * 12;
-      floor.lineStyle(1, 0xffffff, 0.05 - i * 0.007);
-      floor.lineBetween(0, y, width, y);
-    }
+    floor.fillStyle(0x000000, 0.2);
+    floor.fillRect(0, height * 0.7, width, height * 0.3);
+    // Ground horizon line
+    floor.lineStyle(2, 0xffffff, 0.08);
+    floor.lineBetween(0, height * 0.7, width, height * 0.7);
     floor.setDepth(0);
 
     // Enemy health check - check if there's enough questions
@@ -159,14 +156,14 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private createHeroUnits() {
-    // JRPG side-view: heroes on RIGHT, stacked vertically with stagger
+    // JRPG side-view: heroes on RIGHT, standing on ground
     const total = this.party.length;
     this.heroes = this.party.map((char, i) => {
-      const staggerX = (total - 1 - i) * 8; // front chars slightly right
-      const x = 580 + staggerX;
-      const startY = total <= 3 ? 220 : 180;
-      const spacing = total <= 3 ? 60 : 50;
-      const y = startY + i * spacing;
+      const staggerX = (total - 1 - i) * 10; // front chars slightly right
+      const x = 590 + staggerX;
+      const groundY = 425; // ground line for heroes
+      const spacing = 38;
+      const y = groundY - (total - 1 - i) * spacing; // bottom-to-top: MC front
       const charKey = `char_${char.classType}`;
       const sprite = this.add.image(x, y, charKey).setScale(2.5);
       sprite.setData('origScale', 2.5);
@@ -212,11 +209,11 @@ export class BattleScene extends Phaser.Scene {
       const bossHp = 300 + this.chapter * 200;
       const bossAtk = 25 + this.chapter * 10;
       const bossDef = 15 + this.chapter * 5;
-      const sprite = this.add.image(200, 220, 'boss').setScale(3);
-      sprite.setData('origScale', 3);
+      const sprite = this.add.image(200, 410, 'boss').setScale(3.2);
+      sprite.setData('origScale', 3.2);
       sprite.setData('origTint', 0xffffff);
       sprite.setData('homeX', 200);
-      sprite.setData('homeY', 220);
+      sprite.setData('homeY', 410);
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
@@ -239,12 +236,12 @@ export class BattleScene extends Phaser.Scene {
       const enemyCount = 1 + Math.floor(Math.random() * 2);
       const enemyNames = ['สลิมป์', 'ก็อบลิน', 'ออร์ค', 'โครงกระดูก', 'ค้างคาวยักษ์'];
       for (let i = 0; i < enemyCount; i++) {
-        const x = 100 + i * 140;
-        const y = 240 + i * 30;
+        const x = 130 + i * 150;
+        const y = 425 - i * 30; // rear enemies slightly higher
         const name = enemyNames[Math.floor(Math.random() * enemyNames.length)];
         const hp = 40 + this.chapter * 15;
-        const sprite = this.add.image(x, y, 'enemy').setScale(2.2);
-        sprite.setData('origScale', 2.2);
+        const sprite = this.add.image(x, y, 'enemy').setScale(2.5);
+        sprite.setData('origScale', 2.5);
         sprite.setData('origTint', 0xffffff);
         sprite.setData('homeX', x);
         sprite.setData('homeY', y);
