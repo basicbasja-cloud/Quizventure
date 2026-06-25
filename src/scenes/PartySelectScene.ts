@@ -56,28 +56,33 @@ export class PartySelectScene extends Phaser.Scene {
       .setDisplaySize(width, Math.max(height, width * 1025 / 1024))
       .setOrigin(0.5);
 
+    // Dark overlay
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.3).setDepth(1);
+
     // Title
-    this.add.text(width / 2, 72, TH.partySelect.title, {
-      fontSize: '48px',
+    this.add.text(width / 2, 60, TH.partySelect.title, {
+      fontSize: '60px',
       color: '#4ecca3',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       fontStyle: 'bold',
-    }).setOrigin(0.5);
+      stroke: '#000000',
+      strokeThickness: 4,
+      shadow: { offsetX: 0, offsetY: 0, color: '#4ecca3', blur: 20, fill: true },
+    }).setOrigin(0.5).setDepth(5);
 
-    this.add.text(width / 2, 135, TH.partySelect.subtitle, {
-      fontSize: '24px',
+    this.add.text(width / 2, 125, TH.partySelect.subtitle, {
+      fontSize: '30px',
       color: '#aaaaaa',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(5);
 
-    // Class cards in a 3x2 grid
-    const cardWidth = 520;
-    const cardHeight = 360;
-    const startX = width / 2 - (cardWidth + 20);
-    const startY = 230;
+    // Class cards in a 3x2 grid — repositioned to not overlap title area
+    const cardWidth = 540;
+    const cardHeight = 320;
     const cols = 3;
-    const spacingX = cardWidth + 30;
+    const spacingX = cardWidth + 40;
     const spacingY = cardHeight + 30;
+    const startY = 300;
 
     ALL_CLASSES.forEach((classType, i) => {
       const col = i % cols;
@@ -112,44 +117,59 @@ export class PartySelectScene extends Phaser.Scene {
   private createClassCard(x: number, y: number, w: number, h: number, classType: ClassType) {
     const container = this.add.container(x, y);
 
-    // Card background
-    const bg = this.add.rectangle(0, 0, w, h, 0x16213e, 0.9)
-      .setStrokeStyle(2, 0x333333);
+    // Card shadow/glow effect
+    const glow = this.add.rectangle(0, 0, w + 8, h + 8, 0x4ecca3, 0.08)
+      .setStrokeStyle(1, 0x4ecca3, 0.15);
+    container.add(glow);
+
+    // Card background with gradient look
+    const bg = this.add.rectangle(0, 0, w, h, 0x16213e, 0.92)
+      .setStrokeStyle(3, 0x333355);
     container.add(bg);
 
-    // Character sprite placeholder
+    // Inner highlight border
+    const innerBorder = this.add.rectangle(0, 0, w - 12, h - 12, 0x000000, 0)
+      .setStrokeStyle(1, 0x4ecca3, 0.1);
+    container.add(innerBorder);
+
+    // Character sprite placeholder — repositioned for smaller card
     const charKey = `char_${classType}`;
     if (this.textures.exists(charKey)) {
-      const sprite = this.add.image(0, -80, charKey).setScale(3);
-      sprite.setData('origScale', 3);
+      const sprite = this.add.image(0, -60, charKey).setScale(3.0);
+      sprite.setData('origScale', 3.0);
       startIdleAnimation(sprite);
       container.add(sprite);
     }
 
     // Class name
-    const nameText = this.add.text(0, 40, CLASS_NAMES_TH[classType], {
+    const nameText = this.add.text(0, 45, CLASS_NAMES_TH[classType], {
       fontSize: '28px',
       color: '#ffffff',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3,
     }).setOrigin(0.5);
     container.add(nameText);
 
     // Description
     const descText = this.add.text(0, 90, CLASS_DESC_TH[classType], {
-      fontSize: '15px',
+      fontSize: '16px',
       color: '#999999',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-      wordWrap: { width: w - 20 },
+      wordWrap: { width: w - 40 },
       align: 'center',
     }).setOrigin(0.5);
     container.add(descText);
 
-    // Selected indicator
-    const selectedIndicator = this.add.text(w / 2 - 30, -h / 2 + 20, '✓', {
-      fontSize: '32px',
+    // Selected indicator — larger and more prominent
+    const selectedIndicator = this.add.text(w / 2 - 35, -h / 2 + 25, '✓', {
+      fontSize: '40px',
       color: '#4ecca3',
       fontFamily: 'Arial, sans-serif',
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3,
     }).setOrigin(0.5).setVisible(false);
     container.add(selectedIndicator);
 
@@ -157,21 +177,26 @@ export class PartySelectScene extends Phaser.Scene {
     bg.setInteractive({ useHandCursor: true });
     bg.on('pointerover', () => {
       if (!this.selected.includes(classType)) {
-        bg.setStrokeStyle(2, 0x4ecca3);
+        bg.setStrokeStyle(3, 0x4ecca3);
+        glow.setStrokeStyle(2, 0x4ecca3, 0.5);
+        this.tweens.add({ targets: container, scaleX: 1.03, scaleY: 1.03, duration: 150, ease: 'Back.easeOut' });
       }
     });
     bg.on('pointerout', () => {
       if (!this.selected.includes(classType)) {
-        bg.setStrokeStyle(2, 0x333333);
+        bg.setStrokeStyle(3, 0x333355);
+        glow.setStrokeStyle(1, 0x4ecca3, 0.15);
+        this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 150 });
       }
     });
     bg.on('pointerdown', () => {
-      this.toggleSelection(classType, container, bg, selectedIndicator);
+      this.toggleSelection(classType, container, bg, selectedIndicator, glow);
     });
 
     container.setData('classType', classType);
     container.setData('bg', bg);
     container.setData('indicator', selectedIndicator);
+    container.setData('glow', glow);
   }
 
   private toggleSelection(
@@ -179,49 +204,82 @@ export class PartySelectScene extends Phaser.Scene {
     container: Phaser.GameObjects.Container,
     bg: Phaser.GameObjects.Rectangle,
     indicator: Phaser.GameObjects.Text,
+    glow?: Phaser.GameObjects.Rectangle,
   ) {
     const idx = this.selected.indexOf(classType);
 
     if (idx >= 0) {
-      // Deselect
       this.selected.splice(idx, 1);
-      bg.setStrokeStyle(2, 0x333333);
+      bg.setStrokeStyle(3, 0x333355);
+      if (glow) glow.setStrokeStyle(1, 0x4ecca3, 0.15);
       indicator.setVisible(false);
+      SoundManager.confirm();
     } else if (this.selected.length < 4) {
-      // Select
       this.selected.push(classType);
-      bg.setStrokeStyle(2, 0x4ecca3);
+      bg.setStrokeStyle(3, 0x4ecca3);
+      if (glow) glow.setStrokeStyle(2, 0x4ecca3, 0.6);
       indicator.setVisible(true);
+      // Pulse animation on select
+      this.tweens.add({
+        targets: container, scaleX: 1.05, scaleY: 1.05, duration: 150, yoyo: true,
+        ease: 'Back.easeOut',
+      });
+      SoundManager.confirm();
     }
   }
 
   private createConfirmButton(width: number, height: number) {
-    const confirmBg = this.add.image(width / 2, height - 80, 'btn_gold_lg').setAlpha(0.5);
-    const confirmText = this.add.text(width / 2, height - 80, TH.partySelect.confirm, {
-      fontSize: '28px',
+    const btnY = height - 85;
+    const glowBg = this.add.rectangle(width / 2, btnY, 420, 65, 0xf39c12, 0.1)
+      .setStrokeStyle(2, 0xf39c12, 0.3).setDepth(20);
+    const confirmBg = this.add.rectangle(width / 2, btnY, 400, 55, 0x2a2a0a, 0.9)
+      .setStrokeStyle(3, 0xf39c12, 0.5).setDepth(21);
+    const confirmText = this.add.text(width / 2, btnY, TH.partySelect.confirm, {
+      fontSize: '32px',
       color: '#ffffff',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-    }).setOrigin(0.5);
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(22);
+
+    // Counter: X/4 selected
+    const counter = this.add.text(width / 2, btnY + 42, `เลือกแล้ว ${this.selected.length}/4`, {
+      fontSize: '18px',
+      color: '#888888',
+      fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    }).setOrigin(0.5).setDepth(22);
 
     const updateButton = () => {
       const ready = this.selected.length === 4;
-      confirmBg.setAlpha(ready ? 1 : 0.5);
+      confirmBg.fillColor = ready ? 0x3a2a0a : 0x2a2a0a;
+      confirmBg.setStrokeStyle(3, ready ? 0xf39c12 : 0x665500, ready ? 0.9 : 0.4);
+      glowBg.setStrokeStyle(2, ready ? 0xf39c12 : 0x665500, ready ? 0.6 : 0.2);
+      confirmText.setColor(ready ? '#ffffff' : '#777777');
+      counter.setText(`เลือกแล้ว ${this.selected.length}/4`);
       if (ready) {
-        confirmBg.setInteractive({ useHandCursor: true });
-        confirmBg.on('pointerdown', () => { SoundManager.confirm(); this.startGame(); });
+        this.tweens.add({ targets: glowBg, alpha: 0.6, duration: 600, yoyo: true, repeat: -1 });
       }
     };
 
-    // Watch for changes by re-checking on pointer events
-    this.events.on('wake', updateButton);
-
-    // Initial state
     confirmBg.setInteractive({ useHandCursor: true });
+    confirmBg.on('pointerover', () => {
+      if (this.selected.length === 4) {
+        this.tweens.add({ targets: [confirmBg, confirmText], scaleX: 1.06, scaleY: 1.08, duration: 120 });
+      }
+    });
+    confirmBg.on('pointerout', () => {
+      this.tweens.add({ targets: [confirmBg, confirmText], scaleX: 1, scaleY: 1, duration: 120 });
+    });
     confirmBg.on('pointerdown', () => {
       if (this.selected.length === 4) {
+        SoundManager.confirm();
         this.startGame();
       }
     });
+
+    // Periodically update counter
+    this.time.addEvent({ delay: 200, loop: true, callback: updateButton });
   }
 
   private startGame() {

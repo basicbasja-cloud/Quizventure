@@ -47,16 +47,18 @@ export class TeacherDashboard extends Phaser.Scene {
 
     // Title
     this.add.text(width / 2, 30, TH.teacher.title, {
-      fontSize: '28px',
+      fontSize: '36px',
       color: '#4ecca3',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 2,
     }).setOrigin(0.5);
 
     // Back button
-    const backBtn = this.add.text(50, 30, TH.teacher.backToMenu, {
-      fontSize: '18px', color: '#e74c3c', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    const backBtn = this.add.text(40, 30, `← ${TH.teacher.backToMenu}`, {
+      fontSize: '22px', color: '#e74c3c', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
     backBtn.on('pointerdown', () => this.scene.start('MainMenuScene'));
 
     // Action buttons row
@@ -137,7 +139,7 @@ export class TeacherDashboard extends Phaser.Scene {
     headers.forEach((h, i) => {
       inner.add(
         this.add.text(hx, startY, h, {
-          fontSize: '14px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+          fontSize: '17px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
         })
       );
       hx += colWidths[i];
@@ -155,7 +157,7 @@ export class TeacherDashboard extends Phaser.Scene {
     if (this.questions.length === 0) {
       inner.add(
         this.add.text(400, startY + 50, TH.teacher.noQuestions, {
-          fontSize: '16px', color: '#777777', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+          fontSize: '20px', color: '#777777', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
         }).setOrigin(0.5)
       );
       return;
@@ -174,20 +176,20 @@ export class TeacherDashboard extends Phaser.Scene {
       const statusColor = q.usesRemaining > 0 ? '#4ecca3' : '#e74c3c';
 
       let qx = 30;
-      inner.add(this.add.text(qx, y, `${i + 1}`, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 50;
-      inner.add(this.add.text(qx, y, catName, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 80;
-      inner.add(this.add.text(qx, y, diffLabel, { fontSize: '13px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 70;
+      inner.add(this.add.text(qx, y, `${i + 1}`, { fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 50;
+      inner.add(this.add.text(qx, y, catName, { fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 80;
+      inner.add(this.add.text(qx, y, diffLabel, { fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 70;
       const promptDisplay = q.prompt.length > 35 ? q.prompt.substring(0, 35) + '...' : q.prompt;
-      inner.add(this.add.text(qx, y, promptDisplay, { fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 300;
-      inner.add(this.add.text(qx, y, status, { fontSize: '13px', color: statusColor, fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 60;
+      inner.add(this.add.text(qx, y, promptDisplay, { fontSize: '16px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 300;
+      inner.add(this.add.text(qx, y, status, { fontSize: '16px', color: statusColor, fontFamily: 'Noto Sans Thai, Arial, sans-serif' })); qx += 60;
 
       // Edit button
-      const editTxt = this.add.text(qx, y, '✏️', { fontSize: '16px' }).setInteractive({ useHandCursor: true });
+      const editTxt = this.add.text(qx, y, '✏️', { fontSize: '20px' }).setInteractive({ useHandCursor: true });
       editTxt.on('pointerdown', () => this.editQuestion(q));
       inner.add(editTxt); qx += 30;
 
       // Delete button
-      const delTxt = this.add.text(qx, y, '🗑️', { fontSize: '16px' }).setInteractive({ useHandCursor: true });
+      const delTxt = this.add.text(qx, y, '🗑️', { fontSize: '20px' }).setInteractive({ useHandCursor: true });
       delTxt.on('pointerdown', () => this.deleteQuestion(q));
       inner.add(delTxt);
     });
@@ -209,7 +211,7 @@ export class TeacherDashboard extends Phaser.Scene {
     this.formContainer.add(panel);
 
     const title = this.add.text(width / 2, 100, mode === 'add' ? TH.teacher.addQuestion : TH.teacher.editQuestion, {
-      fontSize: '24px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      fontSize: '30px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
     }).setOrigin(0.5);
     this.formContainer.add(title);
 
@@ -217,10 +219,10 @@ export class TeacherDashboard extends Phaser.Scene {
     let fy = 140;
 
     // Prompt
-    this.formContainer.add(this.add.text(120, fy, `${TH.teacher.prompt}:`, { fontSize: '14px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
-    const promptBg = this.add.rectangle(450, fy + 12, 400, 30, 0x0a0a2e).setStrokeStyle(1, 0x666666);
+    this.formContainer.add(this.add.text(120, fy, `${TH.teacher.prompt}:`, { fontSize: '17px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
+    const promptBg = this.add.rectangle(450, fy + 12, 400, 32, 0x0a0a2e).setStrokeStyle(1, 0x666666);
     this.formContainer.add(promptBg);
-    const promptText = this.add.text(260, fy + 2, question?.prompt || '', { fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' });
+    const promptText = this.add.text(260, fy + 2, question?.prompt || '', { fontSize: '17px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' });
     this.formContainer.add(promptText);
     const promptInput = this.createTextInput(promptBg, promptText, (val) => { this.formPrompt = val; });
     fy += 40;
@@ -228,10 +230,10 @@ export class TeacherDashboard extends Phaser.Scene {
     // Choices (4)
     for (let i = 0; i < 4; i++) {
       const label = `${TH.teacher.choice} ${i + 1}:`;
-      this.formContainer.add(this.add.text(120, fy, label, { fontSize: '14px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
-      const choiceBg = this.add.rectangle(450, fy + 12, 400, 30, 0x0a0a2e).setStrokeStyle(1, 0x666666);
+      this.formContainer.add(this.add.text(120, fy, label, { fontSize: '17px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
+      const choiceBg = this.add.rectangle(450, fy + 12, 400, 32, 0x0a0a2e).setStrokeStyle(1, 0x666666);
       this.formContainer.add(choiceBg);
-      const choiceText = this.add.text(260, fy + 2, question?.choices[i] || '', { fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' });
+      const choiceText = this.add.text(260, fy + 2, question?.choices[i] || '', { fontSize: '17px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' });
       this.formContainer.add(choiceText);
       const input = this.createTextInput(choiceBg, choiceText, (val) => { this.formChoices[i] = val; });
       this.formContainer.add(choiceBg);
@@ -242,7 +244,7 @@ export class TeacherDashboard extends Phaser.Scene {
         const isCorrect = question.correctIndex === i;
         const radioLabel = isCorrect ? '✓' : '○';
         const radio = this.add.text(90, fy - 8, radioLabel, {
-          fontSize: '18px', color: isCorrect ? '#4ecca3' : '#666666',
+          fontSize: '22px', color: isCorrect ? '#4ecca3' : '#666666',
         }).setInteractive({ useHandCursor: true });
         radio.on('pointerdown', () => {
           this.formCorrectIndex = i;
@@ -256,11 +258,11 @@ export class TeacherDashboard extends Phaser.Scene {
 
     // Category dropdown
     fy += 5;
-    this.formContainer.add(this.add.text(120, fy, `${TH.teacher.category}:`, { fontSize: '14px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
-    const catBg = this.add.rectangle(300, fy + 12, 180, 30, 0x0a0a2e).setStrokeStyle(1, 0x666666);
+    this.formContainer.add(this.add.text(120, fy, `${TH.teacher.category}:`, { fontSize: '17px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
+    const catBg = this.add.rectangle(300, fy + 12, 180, 32, 0x0a0a2e).setStrokeStyle(1, 0x666666);
     this.formContainer.add(catBg);
     const currentCat = question?.category || ClassType.Warrior;
-    const catText = this.add.text(300, fy + 2, (TH.classes as any)[currentCat] || currentCat, { fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5);
+    const catText = this.add.text(300, fy + 2, (TH.classes as any)[currentCat] || currentCat, { fontSize: '17px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5);
     this.formContainer.add(catText);
     catBg.setInteractive({ useHandCursor: true });
     catBg.on('pointerdown', () => {
@@ -274,11 +276,11 @@ export class TeacherDashboard extends Phaser.Scene {
     fy += 35;
 
     // Difficulty
-    this.formContainer.add(this.add.text(120, fy, `${TH.teacher.difficulty} (${question?.difficulty || 1}/5):`, { fontSize: '14px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
-    const diffBg = this.add.rectangle(300, fy + 12, 180, 30, 0x0a0a2e).setStrokeStyle(1, 0x666666);
+    this.formContainer.add(this.add.text(120, fy, `${TH.teacher.difficulty} (${question?.difficulty || 1}/5):`, { fontSize: '17px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }));
+    const diffBg = this.add.rectangle(300, fy + 12, 180, 32, 0x0a0a2e).setStrokeStyle(1, 0x666666);
     this.formContainer.add(diffBg);
     const diffVal = question?.difficulty || 1;
-    const diffText = this.add.text(300, fy + 2, TH.teacher.difficultyLevels[diffVal - 1], { fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5);
+    const diffText = this.add.text(300, fy + 2, TH.teacher.difficultyLevels[diffVal - 1], { fontSize: '17px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5);
     this.formContainer.add(diffText);
     diffBg.setInteractive({ useHandCursor: true });
     diffBg.on('pointerdown', () => {
@@ -288,13 +290,13 @@ export class TeacherDashboard extends Phaser.Scene {
     fy += 40;
 
     // Save & Cancel buttons
-    const saveBg = this.add.image(width / 2 - 70, fy + 20, 'btn_green_sm').setInteractive({ useHandCursor: true });
-    const saveText = this.add.text(width / 2 - 70, fy + 20, TH.teacher.save, { fontSize: '18px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5);
+    const saveBg = this.add.image(width / 2 - 70, fy + 20, 'btn_green_sm').setScale(1.2).setInteractive({ useHandCursor: true });
+    const saveText = this.add.text(width / 2 - 70, fy + 20, TH.teacher.save, { fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' }).setOrigin(0.5);
     this.formContainer.add(saveBg);
     this.formContainer.add(saveText);
 
-    const cancelBg = this.add.image(width / 2 + 70, fy + 20, 'btn_red_sm').setInteractive({ useHandCursor: true });
-    const cancelText = this.add.text(width / 2 + 70, fy + 20, TH.teacher.cancel, { fontSize: '18px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5);
+    const cancelBg = this.add.image(width / 2 + 70, fy + 20, 'btn_red_sm').setScale(1.2).setInteractive({ useHandCursor: true });
+    const cancelText = this.add.text(width / 2 + 70, fy + 20, TH.teacher.cancel, { fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' }).setOrigin(0.5);
     this.formContainer.add(cancelBg);
     this.formContainer.add(cancelText);
 

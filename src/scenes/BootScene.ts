@@ -44,18 +44,20 @@ export class BootScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor('#1a1a2e');
 
-    const loadText = this.add.text(width / 2, height / 2 - 40, TH.general.loading, {
-      fontSize: '32px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    const loadText = this.add.text(width / 2, height / 2 - 60, TH.general.loading, {
+      fontSize: '48px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5);
 
     const progressText = this.add.text(width / 2, height / 2 + 10, TH.general.pleaseWait, {
-      fontSize: '18px', color: '#aaaaaa', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      fontSize: '26px', color: '#aaaaaa', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5);
 
-    const barBg = this.add.rectangle(width / 2, height / 2 + 60, 300, 20, 0x333333);
-    const barFill = this.add.rectangle(width / 2 - 150, height / 2 + 60, 0, 16, 0x4ecca3).setOrigin(0, 0.5);
+    const barBg = this.add.rectangle(width / 2, height / 2 + 80, 500, 28, 0x333333);
+    barBg.setStrokeStyle(2, 0x4ecca3, 0.3);
+    const barFill = this.add.rectangle(width / 2 - 250, height / 2 + 80, 0, 22, 0x4ecca3).setOrigin(0, 0.5);
 
-    const updateProgress = (pct: number) => { barFill.width = 300 * (pct / 100); };
+    const updateProgress = (pct: number) => { barFill.width = 500 * (pct / 100); };
 
     // Seed sample questions in background (don't block on it)
     QuestionBank.seedSampleData().then(() => updateProgress(40)).catch(() => updateProgress(40));
@@ -83,9 +85,9 @@ export class BootScene extends Phaser.Scene {
 
   private genUI() {
     const sizes = [
-      { w:260, h:50, sfx:'_lg' },
-      { w:200, h:44, sfx:'' },
-      { w:130, h:36, sfx:'_sm' },
+      { w:360, h:70, sfx:'_lg' },
+      { w:280, h:60, sfx:'' },
+      { w:180, h:50, sfx:'_sm' },
     ];
     const colors = [
       { n:'green', c:0x2ecc71, dc:0x27ae60 },
@@ -96,10 +98,10 @@ export class BootScene extends Phaser.Scene {
     for (const sz of sizes) {
       for (const cl of colors) {
         const g = this.make.graphics({ x:0, y:0 });
-        const r = Math.min(8, sz.h * 0.18);
+        const r = Math.min(14, sz.h * 0.2);
         g.fillStyle(cl.dc,1); g.fillRoundedRect(0,0,sz.w,sz.h,r);
         g.fillStyle(cl.c,1); g.fillRoundedRect(0,Math.ceil(sz.h*0.08),sz.w,sz.h-Math.ceil(sz.h*0.08),r);
-        g.lineStyle(1,cl.dc); g.strokeRoundedRect(0,0,sz.w,sz.h,r);
+        g.lineStyle(2,cl.dc); g.strokeRoundedRect(0,0,sz.w,sz.h,r);
         g.generateTexture('btn_' + cl.n + sz.sfx, sz.w, sz.h); g.destroy();
       }
     }
@@ -111,10 +113,10 @@ export class BootScene extends Phaser.Scene {
       const g = this.make.graphics({x:0,y:0});
       const s = 0xf0 - i * 8;
       const clr = (s << 16) | (s << 8) | s;
-      g.fillStyle(clr,1); g.fillRoundedRect(0,0,40,40,6);
-      g.fillStyle(0xffffff,0.25); g.fillRoundedRect(3,3,34,18,4);
-      g.lineStyle(2,0x555); g.strokeRoundedRect(1,1,38,38,6);
-      g.generateTexture('dice_' + names[i], 40, 40); g.destroy();
+      g.fillStyle(clr,1); g.fillRoundedRect(0,0,60,60,9);
+      g.fillStyle(0xffffff,0.25); g.fillRoundedRect(5,5,50,24,6);
+      g.lineStyle(3,0x555); g.strokeRoundedRect(2,2,56,56,9);
+      g.generateTexture('dice_' + names[i], 60, 60); g.destroy();
     }
   }
 }

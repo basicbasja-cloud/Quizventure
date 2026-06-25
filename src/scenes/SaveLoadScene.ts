@@ -25,42 +25,49 @@ export class SaveLoadScene extends Phaser.Scene {
 
     // Title
     const titleText = this.mode === 'save' ? TH.saveLoad.save : TH.saveLoad.load;
-    this.add.text(width / 2, 60, titleText, {
-      fontSize: '36px',
+    this.add.text(width / 2, 50, titleText, {
+      fontSize: '48px',
       color: '#4ecca3',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3,
+      shadow: { offsetX: 0, offsetY: 0, color: '#4ecca3', blur: 15, fill: true },
     }).setOrigin(0.5);
 
     // Back button
-    const backBtn = this.add.text(60, 60, TH.general.back, {
-      fontSize: '22px',
+    const backBtn = this.add.text(50, 50, `← ${TH.general.back}`, {
+      fontSize: '28px',
       color: '#e74c3c',
       fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+    backBtn.on('pointerover', () => backBtn.setColor('#ff6666'));
+    backBtn.on('pointerout', () => backBtn.setColor('#e74c3c'));
     backBtn.on('pointerdown', () => this.scene.start('MainMenuScene'));
 
     // Save slots
     const slots = SaveSystem.getAllSlots();
 
     slots.forEach((slot, i) => {
-      const y = 150 + i * 140;
+      const y = 160 + i * 160;
       const bgColor = slot.exists ? 0x1a1a3e : 0x111122;
-      const slotBg = this.add.rectangle(width / 2, y, 500, 120, bgColor, 0.8)
-        .setStrokeStyle(1, slot.exists ? 0x4ecca3 : 0x333333);
+      const slotBg = this.add.rectangle(width / 2, y, 600, 140, bgColor, 0.85)
+        .setStrokeStyle(2, slot.exists ? 0x4ecca3 : 0x333355);
 
       if (slot.exists) {
-        this.add.text(width / 2 - 220, y - 35, `${TH.saveLoad.saveSlot} ${i + 1}`, {
-          fontSize: '18px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        this.add.text(width / 2 - 270, y - 45, `${TH.saveLoad.saveSlot} ${i + 1}`, {
+          fontSize: '24px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+          stroke: '#000000', strokeThickness: 2,
         });
-        this.add.text(width / 2 - 220, y - 10, `${TH.saveLoad.chapter}: ${slot.currentChapter}`, {
-          fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        this.add.text(width / 2 - 270, y - 12, `${TH.saveLoad.chapter}: ${slot.currentChapter}`, {
+          fontSize: '20px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
         });
-        this.add.text(width / 2 - 220, y + 15, `${TH.stats.gold}: ${slot.gold} | ทีม: ${slot.party.length} คน`, {
-          fontSize: '14px', color: '#999999', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        this.add.text(width / 2 - 270, y + 18, `${TH.stats.gold}: ${slot.gold} | ทีม: ${slot.party.length} คน`, {
+          fontSize: '17px', color: '#999999', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
         });
-        this.add.text(width / 2 + 220, y + 15, new Date(slot.timestamp).toLocaleDateString('th-TH'), {
-          fontSize: '12px', color: '#666666', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        this.add.text(width / 2 + 260, y + 18, new Date(slot.timestamp).toLocaleDateString('th-TH'), {
+          fontSize: '16px', color: '#666666', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
         }).setOrigin(1, 0.5);
 
         slotBg.setInteractive({ useHandCursor: true });
@@ -79,7 +86,7 @@ export class SaveLoadScene extends Phaser.Scene {
         });
       } else {
         this.add.text(width / 2, y, `${TH.saveLoad.saveSlot} ${i + 1}: ${TH.saveLoad.empty}`, {
-          fontSize: '20px', color: '#555555', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+          fontSize: '24px', color: '#555566', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
         }).setOrigin(0.5);
 
         slotBg.setInteractive({ useHandCursor: true });

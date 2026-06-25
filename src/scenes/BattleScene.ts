@@ -106,16 +106,20 @@ export class BattleScene extends Phaser.Scene {
 
     this.bossPhase = 0;
     this.battleLog = [];
-    this.logY = 370;
+    this.logY = 795;
 
-    // Procedural battlefield background with integrated ground
+    // Procedural battlefield background (now 1920x1080 native)
     this.add.image(width / 2, height / 2, 'bg_battlefield').setDepth(0);
+    // Subtle dark overlay on battlefield only (above command window at y=680)
+    this.add.rectangle(width / 2, 340, width, 680, 0x000000, 0.15).setDepth(1);
 
-    // Enemy health check - check if there's enough questions
+    // === FF-STYLE COMMAND WINDOW (bottom 330px) ===
+    this.createCommandWindow();
+
+    // Enemy health check
     if (this.isBoss) {
       const availableCount = await this.checkQuestionAvailability();
       if (availableCount < 2) {
-        // Notify and return to adventure
         this.scene.start('AdventureScene', { party: this.party, saveSlot: this.saveSlot });
         return;
       }
@@ -129,13 +133,14 @@ export class BattleScene extends Phaser.Scene {
 
     // Battle title
     const title = this.isBoss ? TH.adventure.findBoss : TH.adventure.findEnemy;
-    this.add.text(width / 2, 15, `⚔️ ${title}`, {
-      fontSize: '20px', color: '#ff6600', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    this.add.text(width / 2, 14, `⚔️ ${title}`, {
+      fontSize: '30px', color: '#ff6600', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 4,
     }).setOrigin(0.5).setAlpha(0.9).setDepth(30);
 
-    // Turn indicator text
-    this.turnIndicator = this.add.text(width / 2, 45, '', {
-      fontSize: '18px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    // Turn indicator — now displayed inside command window message area
+    this.turnIndicator = this.add.text(width / 2, 765, '', {
+      fontSize: '22px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(30);
 
     // Create menus (hidden initially)
@@ -153,16 +158,40 @@ export class BattleScene extends Phaser.Scene {
     this.startNextTurn();
   }
 
+  /** FF-style command window at the bottom of the screen */
+  private createCommandWindow() {
+    const { width, height } = this.cameras.main;
+    const panelY = 880;
+    const panelH = 400;
+
+    // Main dark panel
+    this.add.rectangle(width / 2, panelY, width - 20, panelH, 0x0a0a2e, 0.96)
+      .setStrokeStyle(4, 0x4ecca3, 0.5).setDepth(25);
+    // Inner border
+    this.add.rectangle(width / 2, panelY, width - 40, panelH - 12, 0x000000, 0)
+      .setStrokeStyle(2, 0x4ecca3, 0.2).setDepth(25);
+    // Top accent line
+    this.add.rectangle(width / 2, panelY - panelH / 2 + 3, width - 40, 3, 0x4ecca3, 0.4).setDepth(26);
+    // Divider between message area and status/commands
+    this.add.rectangle(width / 2, 775, width - 40, 2, 0x4ecca3, 0.2).setDepth(26);
+    // Vertical divider between party status and commands
+    this.add.rectangle(640, 885, 2, 170, 0x4ecca3, 0.15).setDepth(26);
+  }
+
   private createHeroUnits() {
-    // FF-style: heroes on LEFT, diagonal formation bottom→top
+    // FF-style: heroes on the RIGHT side of battlefield, facing left toward enemies
+    // Positioned in the lower-right portion of the battlefield area (above command window)
     const total = this.party.length;
     this.heroes = this.party.map((char, i) => {
       const fromBack = total - 1 - i;
-      const x = 100 + fromBack * 55;
-      const y = 420 - fromBack * 50;
+      // Row-based: front row closer to center, back row further right
+      const x = 1450 + fromBack * 70;
+      const y = 470 - fromBack * 80;
       const charKey = `char_${char.classType}`;
-      const sprite = this.add.image(x, y, charKey).setScale(2.0);
-      sprite.setData('origScale', 2.0);
+      const sprite = this.add.image(x, y, charKey).setScale(2.5);
+      // Flip sprite to face left toward enemies
+      sprite.setFlipX(true);
+      sprite.setData('origScale', 2.5);
       sprite.setData('origTint', 0xffffff);
       sprite.setData('homeX', x);
       sprite.setData('homeY', y);
@@ -186,15 +215,18 @@ export class BattleScene extends Phaser.Scene {
       };
     });
 
-    // Hero stat panel to the RIGHT of each sprite (no vertical overlap)
-    this.heroes.forEach(h => {
-      if (h.sprite) {
-        const px = h.sprite.x + 50;
-        this.add.text(px, h.sprite.y - 20, h.name, {
-          fontSize: '22px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-          stroke: '#000000', strokeThickness: 3,
-        }).setOrigin(0, 0.5).setDepth(25);
-      }
+    // Hero names shown in the command window status panel (left side of command window)
+    this.heroes.forEach((h, i) => {
+      const y = 810 + i * 45;
+      // Name
+      this.add.text(30, y, h.name, {
+        fontSize: '20px', color: '#88ddff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0, 0.5).setDepth(30);
+      // Level
+      this.add.text(200, y, `Lv${h.character.level}`, {
+        fontSize: '16px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      }).setOrigin(0, 0.5).setDepth(30);
     });
   }
 
@@ -208,11 +240,12 @@ export class BattleScene extends Phaser.Scene {
       const bossHp = Math.floor(400 * statMult);
       const bossAtk = Math.floor(30 * statMult);
       const bossDef = Math.floor(18 * statMult);
-      const sprite = this.add.image(620, 230, 'boss').setScale(2.5);
-      sprite.setData('origScale', 2.5);
+      // Boss in upper-left center, facing right toward heroes
+      const sprite = this.add.image(500, 260, 'boss').setScale(4.0);
+      sprite.setData('origScale', 4.0);
       sprite.setData('origTint', 0xffffff);
-      sprite.setData('homeX', 620);
-      sprite.setData('homeY', 230);
+      sprite.setData('homeX', 500);
+      sprite.setData('homeY', 260);
       sprite.setDepth(15);
       startIdleAnimation(sprite);
       this.enemies = [{
@@ -232,25 +265,24 @@ export class BattleScene extends Phaser.Scene {
         sprite,
       }];
     } else {
-      // Enemies by chapter (difficulty scales)
       const enemyPool: string[][] = [
         ['สลิมป์', 'สลิมป์พิษ', 'สลิมป์ยักษ์'],
         ['ก็อบลิน', 'ออร์ค', 'สเคเลตัน'],
         ['มังกรน้อย', 'เดม่อน', 'วิญญาณ'],
       ];
       const pool = enemyPool[Math.min(Math.floor((this.nodeIndex ?? 0) / 4), 2)] || enemyPool[0];
-      const bossNames: string[] = ['ราชาสลิมป์', 'ก็อบลินคิง', 'มังกรไฟ'];
-      const enemyCount = 2; // 2 enemies, balanced
+      const enemyCount = 2;
+      // Enemies on the LEFT side, facing right toward heroes
       for (let i = 0; i < enemyCount; i++) {
-        const x = 640 - i * 90;
-        const y = 190 + i * 60;
+        const x = 350 + i * 120;
+        const y = 280 + i * 90;
         const name = pool[Math.floor(Math.random() * pool.length)];
         const statMult = 1 + this.chapter * 0.65;
         const hp = Math.floor(60 * statMult);
         const atk = Math.floor(11 * statMult);
         const def = Math.floor(6 * statMult);
-        const sprite = this.add.image(x, y, 'enemy').setScale(2);
-        sprite.setData('origScale', 2);
+        const sprite = this.add.image(x, y, 'enemy').setScale(2.5);
+        sprite.setData('origScale', 2.5);
         sprite.setData('origTint', 0xffffff);
         sprite.setData('homeX', x);
         sprite.setData('homeY', y);
@@ -275,11 +307,11 @@ export class BattleScene extends Phaser.Scene {
       }
     }
 
-    // Enemy name labels
+    // Enemy name labels - below sprites
     this.enemies.forEach(e => {
-      this.add.text(e.sprite.x, e.sprite.y - 60, e.name, {
-        fontSize: '24px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 3,
+      this.add.text(e.sprite.x, e.sprite.y + 60, e.name, {
+        fontSize: '26px', color: '#ff6644', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 4,
       }).setOrigin(0.5).setDepth(25);
     });
   }
@@ -296,26 +328,43 @@ export class BattleScene extends Phaser.Scene {
   private createHpBars() {
     this.hpBarContainer = this.add.container(0, 0);
 
-    // Heroes: stat panel to the RIGHT of each sprite
+    // Heroes: HP/MP bars in command window status panel (left side)
     this.heroes.forEach((unit, i) => {
-      const x = this.heroes[i].sprite.x + 50;
-      const y = this.heroes[i].sprite.y;
-      this.createUnitHpBar(unit, x, y, 70, 6);
+      const sx = 250;
+      const sy = 810 + i * 45;
+      // HP bar
+      this.createUnitHpBar(unit, sx, sy, 160, 10);
+      // MP bar below HP
+      const mpFill = this.add.rectangle(sx - 80, sy + 16, 160, 6, 0x112233).setOrigin(0, 0.5).setDepth(30);
+      const mpPct = unit.mp / unit.maxMp;
+      const mpFillBar = this.add.rectangle(sx - 80, sy + 16, 160 * mpPct, 6, 0x4488ff).setOrigin(0, 0.5).setDepth(31);
+      unit.sprite.setData('mpFill', mpFillBar);
+      unit.sprite.setData('mpBg', mpFill);
+      const mpText = this.add.text(sx, sy + 24, `MP ${unit.mp}/${unit.maxMp}`, {
+        fontSize: '12px', color: '#88bbff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(32);
+      unit.sprite.setData('mpText', mpText);
+      // HP value text on right
+      const hpVal = this.add.text(sx + 90, sy, `${unit.hp}/${unit.maxHp}`, {
+        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0, 0.5).setDepth(32);
+      unit.sprite.setData('hpValText', hpVal);
     });
 
     // Enemies: HP bar below sprite
     this.enemies.forEach((unit) => {
       const x = unit.sprite.x;
-      const y = unit.sprite.y + 35;
-      this.createUnitHpBar(unit, x, y, 80, 7);
+      const y = unit.sprite.y + 45;
+      this.createUnitHpBar(unit, x, y, 100, 9);
     });
 
-    // Boss: Dark Souls style — big bar at the TOP of the screen
+    // Boss: classic FF boss bar at the top of the screen
     const boss = this.enemies.find(e => e.isBoss);
     if (boss) {
       const sprite = boss.sprite;
       const { width } = this.cameras.main;
-      // Remove the regular HP bar for boss
       const oldFill = sprite.getData('hpFill');
       const oldBg = sprite.getData('hpBg');
       const oldText = sprite.getData('hpText');
@@ -323,28 +372,26 @@ export class BattleScene extends Phaser.Scene {
       if (oldBg) oldBg.destroy();
       if (oldText) oldText.destroy();
 
-      // Boss name at top
-      this.add.text(width / 2, 70, `👑 ${boss.name}`, {
-        fontSize: '18px', color: '#ff4444', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 3,
+      this.add.text(width / 2, 60, `👑 ${boss.name}`, {
+        fontSize: '28px', color: '#ff4444', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 4,
       }).setOrigin(0.5).setDepth(30);
 
-      // Boss HP bar — wide bar at top
-      const barW = 400;
-      const barH = 18;
+      const barW = 500;
+      const barH = 20;
       const barX = width / 2;
-      const barY = 95;
+      const barY = 88;
 
       const hpBg = this.add.rectangle(barX, barY, barW, barH, 0x331111).setOrigin(0.5).setDepth(30);
-      hpBg.setStrokeStyle(2, 0xff4444);
+      hpBg.setStrokeStyle(3, 0xff4444);
 
       const hpFill = this.add.rectangle(barX - barW / 2, barY, barW, barH, 0xcc2222).setOrigin(0, 0.5).setDepth(31);
       sprite.setData('hpFill', hpFill);
       sprite.setData('hpBg', hpBg);
 
       const hpText = this.add.text(barX, barY, `HP ${boss.hp}/${boss.maxHp}`, {
-        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-        stroke: '#000000', strokeThickness: 2,
+        fontSize: '16px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5).setDepth(32);
       sprite.setData('hpText', hpText);
     }
@@ -355,6 +402,7 @@ export class BattleScene extends Phaser.Scene {
     unit.sprite.setData('barW', barWidth);
     // HP background
     const hpBg = this.add.rectangle(x, y, barWidth, barHeight, 0x332222).setOrigin(0.5).setDepth(22);
+    hpBg.setStrokeStyle(1, 0x553333);
     // HP fill
     const hpPct = unit.hp / unit.maxHp;
     const hpColor = hpPct > 0.5 ? 0x4ecca3 : hpPct > 0.25 ? 0xf39c12 : 0xe74c3c;
@@ -362,23 +410,25 @@ export class BattleScene extends Phaser.Scene {
     unit.sprite.setData('hpFill', hpFill);
     unit.sprite.setData('hpBg', hpBg);
 
-    // HP text
-    const hpText = this.add.text(x, y + 10, `HP ${unit.hp}/${unit.maxHp}`, {
-      fontSize: '10px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    // HP text — larger
+    const hpText = this.add.text(x, y + 14, `HP ${unit.hp}/${unit.maxHp}`, {
+      fontSize: '14px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5).setDepth(24);
     unit.sprite.setData('hpText', hpText);
 
-    // MP bar below HP (heroes only, not enemies)
+    // MP bar below HP (heroes only, not enemies) — larger
     if (!unit.isEnemy) {
-      const mpY = y + 22;
-      const mpBg = this.add.rectangle(x, mpY, barWidth, 5, 0x112233).setOrigin(0.5).setDepth(22);
+      const mpY = y + 30;
+      const mpBg = this.add.rectangle(x, mpY, barWidth, 7, 0x112233).setOrigin(0.5).setDepth(22);
       const mpPct = unit.mp / unit.maxMp;
-      const mpFill = this.add.rectangle(x - barWidth / 2, mpY, barWidth * mpPct, 5, 0x4488ff).setOrigin(0, 0.5).setDepth(23);
+      const mpFill = this.add.rectangle(x - barWidth / 2, mpY, barWidth * mpPct, 7, 0x4488ff).setOrigin(0, 0.5).setDepth(23);
       unit.sprite.setData('mpFill', mpFill);
       unit.sprite.setData('mpBg', mpBg);
       // MP text
-      const mpText = this.add.text(x, mpY + 8, `MP ${unit.mp}/${unit.maxMp}`, {
-        fontSize: '9px', color: '#88bbff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      const mpText = this.add.text(x, mpY + 12, `MP ${unit.mp}/${unit.maxMp}`, {
+        fontSize: '13px', color: '#88bbff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+        stroke: '#000000', strokeThickness: 2,
       }).setOrigin(0.5).setDepth(24);
       unit.sprite.setData('mpText', mpText);
     }
@@ -388,6 +438,7 @@ export class BattleScene extends Phaser.Scene {
     const barW = (unit.sprite.getData('barW') as number) || 80;
     const hpFill = unit.sprite.getData('hpFill') as Phaser.GameObjects.Rectangle;
     const hpText = unit.sprite.getData('hpText') as Phaser.GameObjects.Text;
+    const hpValText = unit.sprite.getData('hpValText') as Phaser.GameObjects.Text;
     if (hpFill) {
       const pct = Math.max(0, unit.hp / unit.maxHp);
       hpFill.width = barW * pct;
@@ -396,7 +447,9 @@ export class BattleScene extends Phaser.Scene {
     if (hpText) {
       hpText.setText(`HP ${Math.max(0, unit.hp)}/${unit.maxHp}`);
     }
-    // Update MP bar too
+    if (hpValText) {
+      hpValText.setText(`${Math.max(0, unit.hp)}/${unit.maxHp}`);
+    }
     const mpFill = unit.sprite.getData('mpFill') as Phaser.GameObjects.Rectangle;
     const mpText = unit.sprite.getData('mpText') as Phaser.GameObjects.Text;
     if (mpFill) {
@@ -475,29 +528,26 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  /** Highlight the active hero with a glow effect and ready stance */
+  /** Highlight the active hero - FF style: step left toward enemies */
   private highlightActiveHero(unit: BattleUnit) {
-    // Reset all hero alphas and positions
     this.heroes.forEach(h => {
       if (h.sprite) {
-        h.sprite.setAlpha(0.5);
-        // Reset to home position
+        h.sprite.setAlpha(0.4);
         const hx = h.sprite.getData('homeX');
         const hy = h.sprite.getData('homeY');
         if (hx) h.sprite.x = hx;
         if (hy) h.sprite.y = hy;
       }
     });
-    // Highlight the active one with ready stance animation
     if (unit.sprite) {
       unit.sprite.setAlpha(1);
       const origScale = unit.sprite.getData('origScale') || 2.5;
-      // Ready up - slight step forward + bounce
+      // Step left toward enemies (FF-style)
       this.tweens.add({
         targets: unit.sprite,
-        x: unit.sprite.x + 15,
-        scaleX: origScale * 1.08,
-        scaleY: origScale * 1.08,
+        x: unit.sprite.x - 40,
+        scaleX: origScale * 1.1,
+        scaleY: origScale * 1.1,
         duration: 250,
         ease: 'Back.easeOut',
         yoyo: true,
@@ -512,32 +562,55 @@ export class BattleScene extends Phaser.Scene {
     this.actionMenu.setVisible(true);
 
     const { width } = this.cameras.main;
-    const menuY = 900;
     const isHealer = unit.character.classType === ClassType.Healer;
 
-    // All classes: Attack (requires questions), Skills, Defend, Escape
-    // Healer class has heal built into their skill list instead
-    const actions: { text: string; action: () => void }[] = [];
-    actions.push({ text: TH.battle.attack, action: () => this.doAttack(unit) });
-    actions.push({ text: TH.battle.specialSkill, action: () => this.showSkillMenu(unit) });
-    if (!isHealer) actions.push({ text: TH.battle.heal, action: () => this.tryHeal(unit) });
-    actions.push({ text: TH.battle.defend, action: () => this.doDefend(unit) });
-    // Escape removed — use home button in AdventureScene instead
+    // FF-style: 2×2 command grid on the RIGHT side of command window
+    const actions: { text: string; action: () => void }[] = [
+      { text: `⚔️ ${TH.battle.attack}`, action: () => this.doAttack(unit) },
+      { text: `✨ ${TH.battle.specialSkill}`, action: () => this.showSkillMenu(unit) },
+      { text: `💚 ${isHealer ? 'สกิล' : TH.battle.heal}`, action: () => this.tryHeal(unit) },
+      { text: `🛡️ ${TH.battle.defend}`, action: () => this.doDefend(unit) },
+    ];
+
+    // The active character indicator at the top of the command area
+    const activeLabel = this.add.text(680, 795, `▶ ${unit.name}`, {
+      fontSize: '22px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0, 0.5);
+    this.actionMenu.add(activeLabel);
 
     actions.forEach((btn, i) => {
-      const x = 190 + i * 350;
-      const bg = this.add.image(x, menuY, 'btn_blue_sm').setInteractive({ useHandCursor: true }).setDepth(0);
-      const txt = this.add.text(x, menuY, btn.text, {
-        fontSize: '24px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-      }).setOrigin(0.5).setDepth(0);
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = 800 + col * 420;
+      const y = 850 + row * 80;
 
-      bg.on('pointerover', () => bg.setScale(1.08));
-      bg.on('pointerout', () => bg.setScale(1));
+      const glow = this.add.rectangle(x, y, 380, 65, 0x4ecca3, 0.05)
+        .setStrokeStyle(2, 0x4ecca3, 0.15);
+      const bg = this.add.rectangle(x, y, 360, 56, 0x16213e, 0.95)
+        .setStrokeStyle(2, 0x4ecca3, 0.4);
+      const txt = this.add.text(x, y, btn.text, {
+        fontSize: '24px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 2,
+      }).setOrigin(0.5);
+
+      bg.setInteractive({ useHandCursor: true });
+      bg.on('pointerover', () => {
+        this.tweens.add({ targets: [bg, txt, glow], scaleX: 1.04, scaleY: 1.06, duration: 100 });
+        bg.setStrokeStyle(2, 0xf39c12, 0.9);
+        glow.setStrokeStyle(2, 0xf39c12, 0.5);
+      });
+      bg.on('pointerout', () => {
+        this.tweens.add({ targets: [bg, txt, glow], scaleX: 1, scaleY: 1, duration: 100 });
+        bg.setStrokeStyle(2, 0x4ecca3, 0.4);
+        glow.setStrokeStyle(2, 0x4ecca3, 0.15);
+      });
       bg.on('pointerdown', () => {
         this.actionMenu.setVisible(false);
         btn.action();
       });
 
+      this.actionMenu.add(glow);
       this.actionMenu.add(bg);
       this.actionMenu.add(txt);
     });
@@ -556,34 +629,47 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
 
-    this.add.text(width / 2, 440, TH.battle.skillSelection, {
-      fontSize: '16px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-    }).setOrigin(0.5);
+    // Title in command window area
+    const skillTitle = this.add.text(680, 795, `▶ ${unit.name} | เลือกทักษะ`, {
+      fontSize: '22px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(0, 0.5);
+    this.skillMenu.add(skillTitle);
 
     skills.forEach((skill, i) => {
-      const row = Math.floor(i / 3);
-      const col = i % 3;
-      const x = width / 2 - 200 + col * 210;
-      const y = 480 + row * 50;
+      const row = Math.floor(i / 2);
+      const col = i % 2;
+      const x = 800 + col * 420;
+      const y = 850 + row * 80;
 
       const questionLabel = `${TH.battle.questionRequired} ${skill.requiredQuestionCount} ${TH.battle.questions}`;
       const diffLabel = `(${BattleQuestionSystem.getDifficultyLabel(skill.questionDifficulty)})`;
       const mpOk = unit.mp >= skill.mpCost;
 
-      const bg = this.add.image(x, y, mpOk ? 'btn_green' : 'btn_red').setAlpha(mpOk ? 1 : 0.5);
-      const txt = this.add.text(x, y - 6, `${(TH.skills as any)[skill.nameKey] || skill.nameKey}`, {
-        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      const glow = this.add.rectangle(x, y, 380, 65, 0x4ecca3, 0.04)
+        .setStrokeStyle(1, mpOk ? 0x4ecca3 : 0x663333, 0.2);
+      const bg = this.add.rectangle(x, y, 360, 56, mpOk ? 0x1a3a2e : 0x331a1a, 0.95)
+        .setStrokeStyle(2, mpOk ? 0x4ecca3 : 0x663333, 0.5);
+      const txt = this.add.text(x, y - 8, `${(TH.skills as any)[skill.nameKey] || skill.nameKey}`, {
+        fontSize: '18px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
       }).setOrigin(0.5);
-      const info = this.add.text(x, y + 12, `${questionLabel} ${diffLabel} | MP:${skill.mpCost}`, {
-        fontSize: '10px', color: mpOk ? '#aaffaa' : '#ff8888', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      const info = this.add.text(x, y + 16, `${questionLabel} ${diffLabel} | MP:${skill.mpCost}`, {
+        fontSize: '13px', color: mpOk ? '#aaffaa' : '#ff8888', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
       }).setOrigin(0.5);
 
+      this.skillMenu.add(glow);
       this.skillMenu.add(bg);
       this.skillMenu.add(txt);
       this.skillMenu.add(info);
 
       if (mpOk) {
         bg.setInteractive({ useHandCursor: true });
+        bg.on('pointerover', () => {
+          this.tweens.add({ targets: [bg, txt, info, glow], scaleX: 1.04, scaleY: 1.06, duration: 100 });
+        });
+        bg.on('pointerout', () => {
+          this.tweens.add({ targets: [bg, txt, info, glow], scaleX: 1, scaleY: 1, duration: 100 });
+        });
         bg.on('pointerdown', async () => {
           this.skillMenu.setVisible(false);
           await this.useSkill(unit, skill);
@@ -591,10 +677,11 @@ export class BattleScene extends Phaser.Scene {
       }
     });
 
-    // Cancel button
-    const cancelBg = this.add.image(width / 2, 560, 'btn_red_sm').setInteractive({ useHandCursor: true });
-    const cancelTxt = this.add.text(width / 2, 560, TH.general.cancel, {
-      fontSize: '16px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    // Cancel button in command window
+    const cancelBg = this.add.rectangle(680, 980, 180, 46, 0x331a1a, 0.95)
+      .setStrokeStyle(2, 0x663333, 0.5).setInteractive({ useHandCursor: true });
+    const cancelTxt = this.add.text(680, 980, `← ${TH.general.cancel}`, {
+      fontSize: '20px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
     }).setOrigin(0.5);
     this.skillMenu.add(cancelBg);
     this.skillMenu.add(cancelTxt);
@@ -664,51 +751,57 @@ export class BattleScene extends Phaser.Scene {
         const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.85);
         this.questionOverlay.add(overlay);
 
-        // Question panel — wider to fit choices comfortably
-        const panel = this.add.rectangle(width / 2, height / 2 - 30, 620, 400, 0x1a1a3e).setStrokeStyle(2, 0xf39c12);
+        // Question panel — wider, taller, more modern
+        const panel = this.add.rectangle(width / 2, height / 2 - 40, 750, 480, 0x1a1a3e, 0.97).setStrokeStyle(3, 0xf39c12);
         this.questionOverlay.add(panel);
 
         // Progress
-        const progress = this.add.text(width / 2, height / 2 - 180,
+        const progress = this.add.text(width / 2, height / 2 - 220,
           `${TH.battle.questionProgress} ${currentQ + 1}${TH.battle.of}${questions.length}`,
-          { fontSize: '18px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' },
+          { fontSize: '22px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+            stroke: '#000000', strokeThickness: 2 },
         ).setOrigin(0.5);
         this.questionOverlay.add(progress);
 
         // Question text
-        const questionText = this.add.text(width / 2, height / 2 - 120, q.prompt, {
-          fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-          wordWrap: { width: 560 }, align: 'center',
+        const questionText = this.add.text(width / 2, height / 2 - 150, q.prompt, {
+          fontSize: '26px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+          wordWrap: { width: 680 }, align: 'center',
+          stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
         this.questionOverlay.add(questionText);
 
-        // Choices
+        // Choices — larger
         q.choices.forEach((choice, i) => {
-          const y = height / 2 - 30 + i * 60;
-          const choiceBg = this.add.rectangle(width / 2, y, 540, 50, 0x0a0a2e).setStrokeStyle(1, 0x4ecca3);
+          const y = height / 2 - 50 + i * 70;
+          const choiceBg = this.add.rectangle(width / 2, y, 620, 58, 0x0a0a2e, 0.9).setStrokeStyle(2, 0x4ecca3);
           choiceBg.setInteractive({ useHandCursor: true });
           this.questionOverlay.add(choiceBg);
 
-          const choiceText = this.add.text(width / 2 - 250, y, `${i + 1}. ${choice}`, {
-            fontSize: '16px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-            wordWrap: { width: 500 }, align: 'left',
+          const choiceText = this.add.text(width / 2 - 290, y, `${i + 1}. ${choice}`, {
+            fontSize: '20px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+            wordWrap: { width: 570 }, align: 'left',
           }).setOrigin(0, 0.5);
           this.questionOverlay.add(choiceText);
 
-          choiceBg.on('pointerover', () => choiceBg.setStrokeStyle(2, 0xf39c12));
-          choiceBg.on('pointerout', () => choiceBg.setStrokeStyle(1, 0x4ecca3));
+          choiceBg.on('pointerover', () => {
+            choiceBg.setStrokeStyle(3, 0xf39c12);
+            choiceBg.fillColor = 0x1a1a3e;
+          });
+          choiceBg.on('pointerout', () => choiceBg.setStrokeStyle(2, 0x4ecca3));
           choiceBg.on('pointerdown', () => {
             const isCorrect = i === q.correctIndex;
             answers.push(isCorrect);
 
-            // Show correct/wrong feedback (above choices to avoid overlap)
-            const feedback = this.add.text(width / 2, height / 2 - 170,
+            // Show correct/wrong feedback
+            const feedback = this.add.text(width / 2, height / 2 - 210,
               isCorrect ? `✅ ${TH.battle.correct}` : `❌ ${TH.battle.wrong}`,
               {
-                fontSize: '24px',
+                fontSize: '30px',
                 color: isCorrect ? '#4ecca3' : '#e74c3c',
                 fontFamily: 'Noto Sans Thai, Arial, sans-serif',
                 fontStyle: 'bold',
+                stroke: '#000000', strokeThickness: 3,
               },
             ).setOrigin(0.5);
             this.questionOverlay.add(feedback);
@@ -1032,20 +1125,17 @@ export class BattleScene extends Phaser.Scene {
 
   private addLog(text: string) {
     const { width } = this.cameras.main;
-    const logEntry = this.add.text(width / 2, this.logY, text, {
-      fontSize: '11px', color: '#dddddd', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-      wordWrap: { width: 450 }, align: 'center',
-      stroke: '#000000', strokeThickness: 2,
-    }).setOrigin(0.5).setAlpha(0.7).setDepth(28);
-
+    // FF-style: message displayed in command window message area
+    const msgY = 795;
+    // Clear previous message
+    this.battleLog.forEach(l => l.destroy());
+    this.battleLog = [];
+    const logEntry = this.add.text(width / 2, msgY, text, {
+      fontSize: '19px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      wordWrap: { width: width - 100 }, align: 'center',
+      stroke: '#000000', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(28);
     this.battleLog.push(logEntry);
-    this.logY += 20;
-
-    // Keep last 5 logs visible
-    if (this.battleLog.length > 5) {
-      const old = this.battleLog.shift();
-      old?.destroy();
-      this.logY -= 20;
-    }
+    this.logY = 795;
   }
 }

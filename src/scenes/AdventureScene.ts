@@ -192,10 +192,21 @@ export class AdventureScene extends Phaser.Scene {
       const r = (z.color >> 16) & 0xff, g = (z.color >> 8) & 0xff, b = z.color & 0xff;
       this.add.rectangle(width / 2, height / 2, width, height, (r << 16) | (g << 8) | b, 0.2).setDepth(0);
     }
-    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.3).setDepth(1);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.35).setDepth(1);
 
-    // Home button (top-right corner)
-    const homeBtn = this.add.text(width - 20, 16, '🏠', { fontSize: '36px', stroke: '#000000', strokeThickness: 4 })
+    // Ambient particles for atmosphere
+    for (let i = 0; i < 15; i++) {
+      const px = Math.random() * width;
+      const py = Math.random() * height;
+      const p = this.add.circle(px, py, Math.random() * 2 + 0.5, ZONES[zone].color, 0.15).setDepth(2);
+      this.tweens.add({
+        targets: p, y: py - 60, alpha: 0, duration: 2500 + Math.random() * 3000,
+        repeat: -1, delay: Math.random() * 3000, yoyo: true,
+      });
+    }
+
+    // Home button (top-right corner) — larger
+    const homeBtn = this.add.text(width - 25, 20, '🏠', { fontSize: '48px', stroke: '#000000', strokeThickness: 5 })
       .setOrigin(1, 0).setInteractive({ useHandCursor: true }).setDepth(50);
     homeBtn.on('pointerover', () => homeBtn.setScale(1.2));
     homeBtn.on('pointerout', () => homeBtn.setScale(1));
@@ -204,8 +215,8 @@ export class AdventureScene extends Phaser.Scene {
       this.scene.start('MainMenuScene');
     });
 
-    // Fullscreen button (top-left corner)
-    const fsBtn = this.add.text(16, 16, '⛶', { fontSize: '36px', stroke: '#000000', strokeThickness: 4 })
+    // Fullscreen button (top-left corner) — larger
+    const fsBtn = this.add.text(20, 20, '⛶', { fontSize: '48px', stroke: '#000000', strokeThickness: 5 })
       .setOrigin(0, 0).setInteractive({ useHandCursor: true }).setDepth(50);
     fsBtn.on('pointerdown', () => {
       if (document.fullscreenElement) { document.exitFullscreen(); }
@@ -218,19 +229,19 @@ export class AdventureScene extends Phaser.Scene {
     });
 
     this.drawMap();
-    this.partyIcon = this.add.text(0, 0, '👥', { fontSize: '18px' }).setOrigin(0.5).setDepth(10);
+    this.partyIcon = this.add.text(0, 0, '👥', { fontSize: '24px' }).setOrigin(0.5).setDepth(10);
     this.positionPartyIcon();
 
     // Bottom UI: Info Panel
     this.createInfoPanel();
 
-    // Dice overlay
+    // Dice overlay — larger and more modern
     this.rollingDice = this.add.container(width / 2, height / 2).setVisible(false).setDepth(100);
     this.rollingDice.add([
-      this.add.rectangle(0, 0, 200, 200, 0x000000, 0.9).setStrokeStyle(3, 0xf39c12),
-      this.add.image(0, -15, 'dice_d20').setScale(3),
-      this.add.text(0, -70, '🎲 กำลังทอย...', { fontSize: '18px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif' }).setOrigin(0.5),
-      this.rollingValue = this.add.text(0, 45, '20', { fontSize: '36px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' }).setOrigin(0.5),
+      this.add.rectangle(0, 0, 280, 260, 0x0a0a2e, 0.95).setStrokeStyle(4, 0xf39c12),
+      this.add.image(0, -20, 'dice_d20').setScale(4),
+      this.add.text(0, -90, '🎲 กำลังทอย...', { fontSize: '24px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold' }).setOrigin(0.5),
+      this.rollingValue = this.add.text(0, 60, '20', { fontSize: '52px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5),
     ]);
     this.createPartyBar();
   }
@@ -264,22 +275,27 @@ export class AdventureScene extends Phaser.Scene {
 
   private createInfoPanel() {
     const { width } = this.cameras.main;
-    const panelY = 800;
+    const panelY = 790;
     // Panel background
-    this.add.rectangle(width / 2, panelY, width - 16, 90, 0x0a0a2e, 0.92).setStrokeStyle(3, 0x4ecca3).setDepth(20);
+    this.add.rectangle(width / 2, panelY, width - 40, 130, 0x0a0a2e, 0.94).setStrokeStyle(3, 0x4ecca3).setDepth(20);
+
+    // Top accent line
+    this.add.rectangle(width / 2, panelY - 62, width - 40, 3, 0x4ecca3, 0.5).setDepth(21);
+
     const node = this.mapNodes[this.currentNodeIndex];
     // Zone name row
-    this.add.text(width / 2, panelY - 16, `${ZONES[node.zone].emoji} ${node.locationName} [${ZONES[node.zone].label}]`, {
-      fontSize: '14px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+    this.add.text(width / 2, panelY - 38, `${ZONES[node.zone].emoji} ${node.locationName} [${ZONES[node.zone].label}]`, {
+      fontSize: '22px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+      stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5).setDepth(21);
     // Event description
-    this.infoText = this.add.text(width / 2, panelY + 4, node.event.description, {
-      fontSize: '12px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
-      wordWrap: { width: width - 60 }, align: 'center',
+    this.infoText = this.add.text(width / 2, panelY - 6, node.event.description, {
+      fontSize: '18px', color: '#cccccc', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      wordWrap: { width: width - 100 }, align: 'center',
     }).setOrigin(0.5).setDepth(21);
     // Dice result
-    this.diceResultText = this.add.text(width / 2, panelY + 18, '', {
-      fontSize: '12px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    this.diceResultText = this.add.text(width / 2, panelY + 26, '', {
+      fontSize: '18px', color: '#4ecca3', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(0.5).setDepth(21);
     // Action buttons below panel
     this.createActionButtons(node.event);
@@ -287,11 +303,15 @@ export class AdventureScene extends Phaser.Scene {
 
   private drawMap() {
     const gfx = this.add.graphics().setDepth(5);
-    // Draw path lines
+    // Draw path lines — thicker and with glow
     for (let i = 0; i < PATH_NODES.length - 1; i++) {
       const a = PATH_NODES[i], b = PATH_NODES[i + 1];
       const done = i < this.currentNodeIndex;
-      gfx.lineStyle(done ? 3 : 1.5, done ? 0x4ecca3 : 0x555577, done ? 0.8 : 0.5);
+      // Glow line
+      gfx.lineStyle(done ? 8 : 4, done ? 0x4ecca3 : 0x444466, done ? 0.15 : 0.1);
+      gfx.lineBetween(a.x, a.y, b.x, b.y);
+      // Core line
+      gfx.lineStyle(done ? 4 : 2, done ? 0x4ecca3 : 0x6666aa, done ? 0.85 : 0.55);
       gfx.lineBetween(a.x, a.y, b.x, b.y);
     }
     // Draw zone labels along the right edge
@@ -308,34 +328,38 @@ export class AdventureScene extends Phaser.Scene {
     Object.values(zoneLabels).forEach(zl => {
       const z = ZONES[zl.zone];
       this.add.text(zl.x, zl.y, zl.done ? '✅' : z.emoji + ' ' + z.label, {
-        fontSize: '11px', color: zl.done ? '#88cc88' : '#' + z.color.toString(16).padStart(6, '0'),
-        fontFamily: 'Noto Sans Thai, Arial, sans-serif', stroke: '#000000', strokeThickness: 2,
+        fontSize: '18px', color: zl.done ? '#88cc88' : '#' + z.color.toString(16).padStart(6, '0'),
+        fontFamily: 'Noto Sans Thai, Arial, sans-serif', stroke: '#000000', strokeThickness: 3,
       }).setOrigin(1, 0.5).setDepth(7);
     });
-    // Draw nodes
+    // Draw nodes — larger and more modern
     this.mapNodes.forEach((node, i) => {
       const curr = i === this.currentNodeIndex;
       const past = i < this.currentNodeIndex;
       const z = ZONES[node.zone];
-      const r = past ? 7 : curr ? 12 : 9;
-      const c = this.add.circle(node.x, node.y, r, curr ? 0xf39c12 : z.color, curr ? 1 : 0.65)
-        .setStrokeStyle(curr ? 3 : 1, curr ? 0xffffff : 0x445566).setDepth(6);
+      const r = past ? 10 : curr ? 16 : 12;
+      // Outer glow ring
+      if (curr) {
+        this.add.circle(node.x, node.y, r + 8, 0xf39c12, 0.1).setDepth(5);
+      }
+      const c = this.add.circle(node.x, node.y, r, curr ? 0xf39c12 : z.color, curr ? 1 : 0.7)
+        .setStrokeStyle(curr ? 4 : 2, curr ? 0xffffff : 0x5577aa).setDepth(6);
       if (curr) this.tweens.add({ targets: c, scaleX: 1.3, scaleY: 1.3, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
       // Label position: alternate above/below based on node index to avoid overlap
-      const labelAbove = i % 3 === 0 || i === 13; // certain nodes get labels above
+      const labelAbove = i % 3 === 0 || i === 13;
       const textColor = past ? '#88cc88' : '#' + z.color.toString(16).padStart(6, '0');
-      // Location name
-      this.add.text(node.x, node.y + (labelAbove ? -20 : 18), node.locationName, {
-        fontSize: '9px', color: textColor,
-        fontFamily: 'Noto Sans Thai, Arial, sans-serif', stroke: '#000000', strokeThickness: 2,
+      // Location name — larger
+      this.add.text(node.x, node.y + (labelAbove ? -26 : 24), node.locationName, {
+        fontSize: '15px', color: textColor,
+        fontFamily: 'Noto Sans Thai, Arial, sans-serif', stroke: '#000000', strokeThickness: 4,
       }).setOrigin(0.5).setDepth(7);
-      // Zone emoji
-      this.add.text(node.x, node.y + (labelAbove ? 18 : -20), z.emoji, {
-        fontSize: '10px', stroke: '#000000', strokeThickness: 2,
+      // Zone emoji — larger
+      this.add.text(node.x, node.y + (labelAbove ? 24 : -26), z.emoji, {
+        fontSize: '16px', stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5).setDepth(7);
       // Checkmark for completed
       if (past) this.add.text(node.x, node.y, '✓', {
-        fontSize: '11px', color: '#ffffff', fontFamily: 'Arial', stroke: '#000000', strokeThickness: 2,
+        fontSize: '18px', color: '#ffffff', fontFamily: 'Arial', stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0.5).setDepth(7);
     });
   }
@@ -358,7 +382,7 @@ export class AdventureScene extends Phaser.Scene {
 
   private createActionButtons(event: ZoneEvent) {
     const { width } = this.cameras.main;
-    const btnY = 910;
+    const btnY = 900;
     const btns: { text: string; action: () => void }[] = [];
     switch (event.type) {
       case EncounterType.Empty: btns.push({ text: TH.adventure.continue, action: () => this.advanceToNext() }); break;
@@ -370,15 +394,28 @@ export class AdventureScene extends Phaser.Scene {
       case EncounterType.Boss: btns.push({ text: '⚔️ บอส', action: () => this.startBattle(true) }); break;
     }
     btns.forEach((b, i) => {
-      const x = width / 2 - 50 + i * 115;
-      const bg = this.add.image(x, btnY, i === 1 ? 'btn_gold_sm' : 'btn_blue_sm')
-        .setInteractive({ useHandCursor: true }).setScale(1).setDepth(22);
-      this.add.text(x, btnY, b.text, {
-        fontSize: '13px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
-      }).setOrigin(0.5).setDepth(23);
-      bg.on('pointerover', () => bg.setScale(1.05));
-      bg.on('pointerout', () => bg.setScale(1));
-      bg.on('pointerdown', () => { bg.setScale(0.95); b.action(); });
+      const x = width / 2 - 60 + i * 140;
+      // Button glow
+      const glow = this.add.rectangle(x, btnY, 120, 55, 0x4ecca3, 0.08)
+        .setStrokeStyle(2, 0x4ecca3, 0.2).setDepth(22);
+      const bg = this.add.rectangle(x, btnY, 110, 48, i === 1 ? 0x3a2a0a : 0x16213e, 0.95)
+        .setStrokeStyle(2, 0x4ecca3, 0.6).setDepth(23)
+        .setInteractive({ useHandCursor: true });
+      const txt = this.add.text(x, btnY, b.text, {
+        fontSize: '20px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
+      }).setOrigin(0.5).setDepth(24);
+      bg.on('pointerover', () => {
+        this.tweens.add({ targets: [bg, txt, glow], scaleX: 1.06, scaleY: 1.08, duration: 100 });
+        bg.setStrokeStyle(2, 0xf39c12, 0.9);
+        glow.setStrokeStyle(2, 0xf39c12, 0.5);
+      });
+      bg.on('pointerout', () => {
+        this.tweens.add({ targets: [bg, txt, glow], scaleX: 1, scaleY: 1, duration: 100 });
+        bg.setStrokeStyle(2, 0x4ecca3, 0.6);
+        glow.setStrokeStyle(2, 0x4ecca3, 0.2);
+      });
+      bg.on('pointerdown', () => { b.action(); });
     });
     // Keyboard shortcut: Space/Enter to trigger first action
     this.input.keyboard?.on('keydown-SPACE', () => { if (btns.length > 0) btns[0].action(); });
@@ -458,36 +495,45 @@ export class AdventureScene extends Phaser.Scene {
 
   private createPartyBar() {
     const { width } = this.cameras.main;
-    const y = 1020;
+    const y = 1030;
     // Bar background
-    this.add.rectangle(width / 2, y + 5, width, 35, 0x0a0a2e, 0.85).setDepth(19);
+    this.add.rectangle(width / 2, y + 5, width, 42, 0x0a0a2e, 0.9).setDepth(19);
+    this.add.rectangle(width / 2, y - 16, width, 2, 0x4ecca3, 0.3).setDepth(19);
     // Zone progress on left
     const zoneLabel = this.zoneOrder.map((z, zi) => {
       const segEnd = [3, 7, 10, 13][zi];
       const done = this.currentNodeIndex > segEnd;
       return done ? '✅' : ZONES[z].emoji;
     }).join(' ');
-    this.add.text(4, y + 5, zoneLabel, { fontSize: '12px' }).setOrigin(0, 0.5).setDepth(20);
-    // Party members
+    this.add.text(12, y + 5, zoneLabel, { fontSize: '16px' }).setOrigin(0, 0.5).setDepth(20);
+    // Party members — larger bars
     this.party.forEach((c, i) => {
-      const x = 160 + i * 155;
+      const x = 200 + i * 195;
       const p = c.stats.hp / c.stats.maxHp;
       // Name
       this.add.text(x, y + 5, c.name, {
-        fontSize: '10px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        fontSize: '15px', color: '#ffffff', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 3,
       }).setOrigin(0, 0.5).setDepth(20);
-      // HP bar
-      this.add.rectangle(x + 55, y + 5, 70, 6, 0x333333).setOrigin(0, 0.5).setDepth(20);
-      this.add.rectangle(x + 55, y + 5, 70 * p, 6, p > 0.5 ? 0x4ecca3 : p > 0.25 ? 0xf39c12 : 0xe74c3c)
+      // HP bar — taller
+      const barW = 90;
+      const barH = 10;
+      this.add.rectangle(x + 55, y + 5, barW, barH, 0x333333).setOrigin(0, 0.5).setDepth(20);
+      this.add.rectangle(x + 55, y + 5, barW * p, barH, p > 0.5 ? 0x4ecca3 : p > 0.25 ? 0xf39c12 : 0xe74c3c)
         .setOrigin(0, 0.5).setDepth(21);
+      // HP text
+      this.add.text(x + 55, y + 15, `${c.stats.hp}/${c.stats.maxHp}`, {
+        fontSize: '11px', color: '#aaaaaa', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      }).setOrigin(0.5).setDepth(20);
       // Level
-      this.add.text(x + 130, y + 5, `Lv${c.level}`, {
-        fontSize: '10px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+      this.add.text(x + 160, y + 5, `Lv${c.level}`, {
+        fontSize: '16px', color: '#f39c12', fontFamily: 'Noto Sans Thai, Arial, sans-serif', fontStyle: 'bold',
+        stroke: '#000000', strokeThickness: 2,
       }).setOrigin(0, 0.5).setDepth(20);
     });
     // Progress
-    this.add.text(width - 4, y + 5, `${this.currentNodeIndex + 1}/${this.mapNodes.length}`, {
-      fontSize: '11px', color: '#555555', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
+    this.add.text(width - 12, y + 5, `${this.currentNodeIndex + 1}/${this.mapNodes.length}`, {
+      fontSize: '16px', color: '#777777', fontFamily: 'Noto Sans Thai, Arial, sans-serif',
     }).setOrigin(1, 0.5).setDepth(20);
   }
 }
