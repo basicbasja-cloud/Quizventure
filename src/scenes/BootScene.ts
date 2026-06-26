@@ -28,6 +28,9 @@ export class BootScene extends Phaser.Scene {
     this.load.image('bg_plain', 'assets/images/backgrounds/uncolored_plain.png');
     this.load.image('bg_volcano', 'assets/images/backgrounds/uncolored_talltrees.png');
 
+    // JRPG battle background (CC-BY ansimuz.com)
+    this.load.image('bg_battle_jrpg', 'assets/images/backgrounds/bg_battle_jrpg.png');
+
     // Character textures are generated procedurally in create()
 
     // Load sound effects
